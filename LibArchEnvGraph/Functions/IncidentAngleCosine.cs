@@ -22,12 +22,11 @@ namespace LibArchEnvGraph.Functions
 
         private IVariable<ISolarPositionData> solpossrc { get; set; }
 
-        public IncidentAngleCosine(double tiltAngle, double azimuthAngle, double tiltAngleCos,
-            IVariable<ISolarPositionData> solarPosition)
+        public IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<ISolarPositionData> solarPosition)
         {
             this.tiltAngle = tiltAngle;
+            this.tiltAngleCos = Math.Cos(tiltAngle * Math.PI / 180.0);
             this.azimuthAngle = azimuthAngle;
-            this.tiltAngleCos = tiltAngleCos;
             this.solpossrc = solarPosition;
         }
 

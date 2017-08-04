@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph
 {
+    /// <summary>
+    /// 住宅を表すクラス
+    /// </summary>
     public class House
     {
         public int tickTime = 60 * 60; //1時間単位
@@ -23,16 +26,26 @@ namespace LibArchEnvGraph
 
         public double Lat { get; set; } = 34.68639;
 
-        public List<Room> Rooms { get; set; }
+        /// <summary>
+        /// 室一覧
+        /// </summary>
+        public List<Room> Rooms { get; set; } = new List<Room>();
 
-        public List<Wall> Walls { get; set; }
+        /// <summary>
+        /// 壁体一覧
+        /// </summary>
+        public List<Wall> Walls { get; set; } = new List<Wall>();
 
+        /// <summary>
+        /// 外壁面一覧
+        /// </summary>
         public List<WallSurface> OuterSurfaces { get; set; }
 
         public ICalculationGraph GetCalcuationGraph(IVariable<double> solarRadiation, IVariable<double> outsideTemperature, FunctionFactory F)
         {
             var container = new ContainerModule();
-            var _walls = Walls.Select(x => x.GetCalcuationGraph() as SerialHeatConductionModule).ToArray();
+
+            var _walls = Walls.Select(x => x.GetCalcuationGraph(tickTime) as SerialHeatConductionModule).ToArray();
             container.Modules.AddRange(_walls);
 
             var wallDic = new Dictionary<Wall, SerialHeatConductionModule>();
@@ -42,66 +55,90 @@ namespace LibArchEnvGraph
             }
 
 
-            //TODO: 窓を実装します。
-            /*
-            
-
             //太陽位置
             var sol_pos = F.SolarPosition(Lat, L, tickTime, beginDay, days);
 
-            //透過日射
-            var sol_tr = new SolarTransmissionModule(
-                area: 2.0,  //2.0m2
-                tiltAngle: 0,
-                azimuthAngle: 60.0,
-                groundReturnRate: 0.1,
-                solarThroughRate: 0.7,
-                solarPosition: sol_pos,
-                solarRadiation: solarRadiation,
-                tickTime: tickTime,
-                beginDay: beginDay,
-                days: days
-            );
-            */
-
             foreach (var room in Rooms)
             {
-                var _room = room.GetCalcuationGraph() as HeatCapacityModule;
+                var _room = room.GetCalcuationGraph(tickTime) as HeatCapacityModule;
                 var __walls = room.Walls.Select(x => new { Module = wallDic[x.Wall], x.SurfaceNo }).ToArray();
-
-                #region  相互放射
                 var Nw = __walls.Count();
-                if (Nw >= 2)
+
+                #region 透過日射
+
+                var QGT = new List<IVariable<double>>();
+                for (int i = 0; i < Nw; i++)
                 {
-                    for (int i = 0; i < Nw - 1; i++)
+                    //透過日射
+                    if (room.Walls[i].Wall.IsOpen)
                     {
-                        for (int j = i + 1; j < Nw; j++)
+                        var win = room.Walls[i].Wall;
+
+                        var sol_tr = new SolarTransmissionModule(
+                            area: win.S,  //2.0m2
+                            tiltAngle: win.TiltAngle,
+                            azimuthAngle: win.AzimuthAngle,
+                            groundReturnRate: win.GroundReturnRate,
+                            solarThroughRate: win.SolarThroughRate,
+                            solarPosition: sol_pos,
+                            solarRadiation: solarRadiation,
+                            tickTime: tickTime,
+                            beginDay: beginDay,
+                            days: days
+                        );
+
+                        QGT.Add(sol_tr.HeatOut);
+
+                        container.Modules.Add(sol_tr);
+                    }
+                }
+
+                //透過日射の合計 [W]
+                var sumQGT = F.Multiply(tickTime, F.Concat(QGT));
+                for (int i = 0; i < Nw; i++)
+                {
+                    if (room.Walls[i].Wall.IsOpen == false)
+                    {
+                        var wall = room.Walls[i].Wall;
+
+                        //TODO: まじめの分配率の計算をする
+                        var h = F.SplitQGT(sumQGT, wall.S, 0.25);
+
+                        if (__walls[i].SurfaceNo == 1)
                         {
-                            var R = new RadiationHeatTransferModule
-                            {
-                                //TODO: 放射の収支を無視した値になっているので真面目の解く
-                                F12 = 1.0 / (Nw - 1)
-                            };
-
-                            if (__walls[i].SurfaceNo == 1)
-                            {
-                                __walls[i].Module.HeatIn1.Add(R.dU1);
-                            }
-                            else
-                            {
-                                __walls[i].Module.HeatIn2.Add(R.dU1);
-                            }
-
-                            if (__walls[j].SurfaceNo == 1)
-                            {
-                                __walls[j].Module.HeatIn1.Add(R.dU2);
-                            }
-                            else
-                            {
-                                __walls[j].Module.HeatIn2.Add(R.dU2);
-                            }
+                            __walls[i].Module.HeatIn1.Add(h);
+                        }
+                        else
+                        {
+                            __walls[i].Module.HeatIn2.Add(h);
                         }
                     }
+                }
+
+                #endregion
+
+                #region  相互放射
+                if (Nw >= 2)
+                {
+                    var MR = new MutualRadiationModule(Nw);
+
+                    for (int i = 0; i < Nw; i++)
+                    {
+                        var __wall = __walls[i].Module;
+
+                        if (__walls[i].SurfaceNo == 1)
+                        {
+                            MR.TempIn[i] = __wall.TempOut1;
+                            __wall.HeatIn1.Add(F.Multiply(tickTime, MR.HeatOut[i]));
+                        }
+                        else
+                        {
+                            MR.TempIn[i] = __wall.TempOut2;
+                            __wall.HeatIn2.Add(F.Multiply(tickTime, MR.HeatOut[i]));
+                        }
+                    }
+
+                    container.Modules.Add(MR);
                 }
                 #endregion
 
@@ -112,38 +149,40 @@ namespace LibArchEnvGraph
                     {
                         cValue = NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
                         S = __walls[i].Module.S,
-                        TfIn = _room.TempOut,
-                        TsIn = __walls[i].Module.TempOut1,
+                        TempFluidIn = _room.TempOut,
                     };
 
 
                     if (__walls[i].SurfaceNo == 1)
                     {
-                        __walls[i].Module.HeatIn1.Add(cv.dUsOut);
+                        cv.TempSolidIn = __walls[i].Module.TempOut1;
+                        __walls[i].Module.HeatIn1.Add(F.Multiply(tickTime, cv.HeatflowSolidOut));
                     }
                     else
                     {
-                        __walls[i].Module.HeatIn2.Add(cv.dUsOut);
+                        cv.TempSolidIn = __walls[i].Module.TempOut2;
+                        __walls[i].Module.HeatIn2.Add(F.Multiply(tickTime, cv.HeatflowSolidOut));
                     }
 
-                    _room.HeatIn.Add(cv.dUfOut);
+                    _room.HeatFlowIn.Add(cv.HeatflowFluidOut);
+
+                    container.Modules.Add(cv);
                 }
                 #endregion
-
 
                 //バインド
                 for (int i = 0; i < Nw; i++)
                 {
                     if (__walls[i].SurfaceNo == 1)
                     {
-                        room.Walls[i].Temperature = __walls[i].Module.TempOut1;
+                        room.Walls[i].Temperature = F.KelvinToCelsius(__walls[i].Module.TempOut1);
                     }
                     else
                     {
-                        room.Walls[i].Temperature = __walls[i].Module.TempOut2;
+                        room.Walls[i].Temperature = F.KelvinToCelsius(__walls[i].Module.TempOut2);
                     }
                 }
-                room.RoomTemperature = _room.TempOut;
+                room.RoomTemperature = F.KelvinToCelsius(_room.TempOut);
 
                 container.Modules.Add(_room);
             }
@@ -157,22 +196,26 @@ namespace LibArchEnvGraph
                 {
                     cValue = NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
                     S = _wall.S,
-                    TfIn = outsideTemperature
+                    TempFluidIn = outsideTemperature
                 };
 
+                IVariable<double> T;
                 if (OuterSurfaces[i].SurfaceNo == 1)
                 {
-                    nv.TsIn = _wall.TempOut1;
-                    _wall.HeatIn1.Add(nv.dUsOut);
+                    T = _wall.TempOut1;
+                    _wall.HeatIn1.Add(nv.HeatflowSolidOut);
                 }
                 else
                 {
-                    nv.TsIn = _wall.TempOut2;
-                    _wall.HeatIn2.Add(nv.dUsOut);
+                    T = _wall.TempOut2;
+                    _wall.HeatIn2.Add(nv.HeatflowSolidOut);
                 }
+                nv.TempSolidIn = T;
 
                 //バインド
-                OuterSurfaces[i].Temperature = nv.TsIn;
+                OuterSurfaces[i].Temperature = F.KelvinToCelsius(T);
+
+                container.Modules.Add(nv);
             }
             #endregion
 

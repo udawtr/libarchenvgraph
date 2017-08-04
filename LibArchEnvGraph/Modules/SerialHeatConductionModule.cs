@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Modules
 {
-    public class SerialHeatConductionModule : BaseModule
+    public class SerialHeatConductionModule : ContainerModule
     {
         public double depth { get; set; }
 
@@ -23,7 +23,15 @@ namespace LibArchEnvGraph.Modules
 
         public double S { get; set; }
 
+        /// <summary>
+        /// 熱伝導率 [W/mK]
+        /// </summary>
         public double Rambda { get; set; }
+
+        /// <summary>
+        /// 単位時間 [s]
+        /// </summary>
+        public double dt { get; set; }
 
         private double dx;
 
@@ -69,21 +77,22 @@ namespace LibArchEnvGraph.Modules
                 {
                     dx = dx,
                     Rambda = Rambda,
-                    S = S
+                    S = S,
+                    dt = dt
                 });
             }
 
             for (int i = 0; i < n_slice - 1; i++)
             {
-                heatCapacityModuleList[i].HeatIn.Add(heatConductionModuleList[i].HeatOut1);
-                heatCapacityModuleList[i+1].HeatIn.Add(heatConductionModuleList[i].HeatOut2);
+                heatCapacityModuleList[i].HeatFlowIn.Add(heatConductionModuleList[i].HeatOut1);
+                heatCapacityModuleList[i+1].HeatFlowIn.Add(heatConductionModuleList[i].HeatOut2);
 
                 heatConductionModuleList[i].TempIn1 = heatCapacityModuleList[i].TempOut;
                 heatConductionModuleList[i].TempIn2 = heatCapacityModuleList[i + 1].TempOut;
             }
 
-            heatCapacityModuleList[0].HeatIn.AddRange(HeatIn1);
-            heatCapacityModuleList[n_slice - 1].HeatIn.AddRange(HeatIn2);
+            heatCapacityModuleList[0].HeatFlowIn.Add(F.Multiply(dt, F.Concat(HeatIn1)));
+            heatCapacityModuleList[n_slice - 1].HeatFlowIn.Add(F.Multiply(dt, F.Concat(HeatIn2)));
 
             TempOut1.Link = heatCapacityModuleList[0].TempOut;
             TempOut2.Link = heatCapacityModuleList[n_slice - 1].TempOut;
@@ -91,11 +100,15 @@ namespace LibArchEnvGraph.Modules
             for (int i = 0; i < n_slice; i++)
             {
                 heatCapacityModuleList[i].Init(F);
+                heatCapacityModuleList[i].SetTemperature(10 + 273.15);
             }
             for (int i = 0; i < n_slice  -1; i++)
             {
                 heatConductionModuleList[i].Init(F);
             }
+
+            Modules.AddRange(heatCapacityModuleList);
+            Modules.AddRange(heatConductionModuleList);
         }
     }
 }

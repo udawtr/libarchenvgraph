@@ -26,19 +26,19 @@ namespace LibArchEnvGraph.Modules
         private IVariable<double> directionCosine;
 
         /// <summary>
-        /// 傾斜面直達日射量
+        /// 傾斜面直達日射量 ID
         /// </summary>
-        public LinkVariable<double> ID { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> DirectOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
-        /// 傾斜面拡散日射量
+        /// 傾斜面拡散日射量 Id
         /// </summary>
-        public LinkVariable<double> Id { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> DiffusedOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
-        /// 傾斜面全天日射量
+        /// 傾斜面全天日射量 Iw
         /// </summary>
-        public LinkVariable<double> Iw { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> AllOut { get; private set; } = new LinkVariable<double>();
 
         private bool Inited = false;
 
@@ -55,20 +55,13 @@ namespace LibArchEnvGraph.Modules
         public override void Init(FunctionFactory F)
         {
             //傾斜面直達日射量
-            ID.Link = F.Multiply(directionCosine, directSolarRadiation);
+            DirectOut.Link = F.TiltDirectSolarRadiation(directionCosine, directSolarRadiation);
 
             //傾斜面拡散日射量
-            Id.Link = new TiltDiffusedSolarRadiation
-            {
-                ShapeFactorToSky = shapeFactorToSky,
-                GroundReturnRate = groundReturnRate,
-                SolarPosition = solarPositionSource,
-                DirectSolarRadiation = directSolarRadiation,
-                DiffusedSolarRadiation = diffusedSolarRadiation
-            };
+            DiffusedOut.Link = F.TiltDiffusedSolarRadiation(shapeFactorToSky, groundReturnRate, solarPositionSource, directSolarRadiation, diffusedSolarRadiation);
 
             //傾斜面全天日射量
-            Iw.Link = F.Add(ID, Id);
+            AllOut.Link = F.Add(DirectOut, DiffusedOut);
 
             Inited = true;
         }

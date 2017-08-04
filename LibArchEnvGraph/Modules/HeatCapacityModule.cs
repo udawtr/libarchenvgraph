@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 熱容量ブロック
+    /// 熱容量モジュール
     /// </summary>
     public class HeatCapacityModule : ICalculationGraph
     {
@@ -22,12 +22,17 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public double cro { get; set; }
 
+        public double dt { get; set; } = 1.0;
+
         /// <summary>
         /// 温度 [℃]
         /// </summary>
         public IVariable<double> TempOut { get; private set; } = new LinkVariable<double>();
 
-        public List<IVariable<double>> HeatIn { get; private set; } = new List<IVariable<double>>();
+        /// <summary>
+        /// 熱流 [W]
+        /// </summary>
+        public List<IVariable<double>> HeatFlowIn { get; private set; } = new List<IVariable<double>>();
 
         private IVariable<double> _temp;
 
@@ -35,7 +40,7 @@ namespace LibArchEnvGraph.Modules
 
         public void Init(FunctionFactory F)
         {
-            _heat = F.HeatMemory(HeatIn);
+            _heat = F.HeatMemory(F.Multiply(dt, F.Concat(HeatFlowIn)));
             _temp = F.Temperature(cro, V, _heat);
 
             (TempOut as LinkVariable<double>).Link = _temp;

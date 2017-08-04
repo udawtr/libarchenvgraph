@@ -40,7 +40,10 @@ namespace LibArchEnvGraph.Functions
 
         public double Get(int t)
         {
-            var dU = F12 * e1 * e2 * (Math.Pow(T1.Get(t), 4.0) - Math.Pow(T2.Get(t), 4.0));
+            var dU = F12 * e1 * e2 * 5.67 * (Math.Pow(T1.Get(t) / 100, 4.0) - Math.Pow(T2.Get(t) / 100, 4.0));
+
+            System.Diagnostics.Debug.Assert(!Double.IsNaN(dU));
+
             return dU;
         }
     }

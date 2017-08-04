@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 熱伝導ブロック
+    /// 熱伝導モジュール
     /// </summary>
     /// <seealso cref="Fourier"/>
     public class HeatConductionModule : BaseModule
@@ -28,6 +28,11 @@ namespace LibArchEnvGraph.Modules
         /// 熱流の通過面積 [m2]
         /// </summary>
         public double S { get; set; }
+
+        /// <summary>
+        /// 単位時間 [s]
+        /// </summary>
+        public double dt { get; set; }
 
         /// <summary>
         /// 固体1の温度 [℃]
@@ -51,10 +56,10 @@ namespace LibArchEnvGraph.Modules
 
         public override void Init(FunctionFactory F)
         {
-            var fourier = F.Fourier(dx, Rambda, S, TempIn1, TempIn2);
+            var fourier = F.Fourier(dx, Rambda, S, TempIn1, TempIn2, dt);
 
-            (HeatOut1 as LinkVariable<double>).Link = new Invert(fourier);
-            (HeatOut2 as LinkVariable<double>).Link = fourier;
+            (HeatOut1 as LinkVariable<double>).Link = fourier;
+            (HeatOut2 as LinkVariable<double>).Link = new Invert(fourier);
         }
     }
 }

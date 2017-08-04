@@ -9,6 +9,8 @@ namespace LibArchEnvGraph
 {
     public class Wall
     {
+        public double Rambda { get; set; }
+
         public double cro { get; set; }
 
         public double depth { get; set; }
@@ -19,13 +21,29 @@ namespace LibArchEnvGraph
 
         public bool IsCeiling { get; set; }
 
-        public ICalculationGraph GetCalcuationGraph()
+        public double TiltAngle { get; set; }
+
+        public double AzimuthAngle { get; set; }
+
+        public double GroundReturnRate { get; set; }
+
+        public double SolarThroughRate { get; set; }
+
+        /// <summary>
+        /// 開口部
+        /// </summary>
+        public bool IsOpen { get; set; }
+
+        public ICalculationGraph GetCalcuationGraph(double dt)
         {
             return new SerialHeatConductionModule()
             {
                 cro = cro,
                 depth = depth,
-                S = S
+                S = S,
+                Rambda = Rambda,
+                dt = dt,
+                n_slice = 5,
             };
         }
     }

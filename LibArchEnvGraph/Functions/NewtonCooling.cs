@@ -17,12 +17,12 @@ namespace LibArchEnvGraph.Functions
         public double S { get; set; }
 
         /// <summary>
-        /// 固体(壁体)の表面温度 [℃]
+        /// 固体(壁体)の表面温度 [K]
         /// </summary>
         public IVariable<double> Ts { get; set; }
 
         /// <summary>
-        /// 流体(空気)の温度 [℃]
+        /// 流体(空気)の温度 [K]
         /// </summary>
         public IVariable<double> Tf { get; set; }
 
@@ -36,6 +36,11 @@ namespace LibArchEnvGraph.Functions
         {
             var dT = Ts.Get(t) - Tf.Get(t);
             var dU = alpha_c.Get(t) * dT * S;
+
+            System.Diagnostics.Debug.Assert(!Double.IsNaN(dU));
+
+            System.Diagnostics.Debug.WriteLine($"{dU} [W]");
+
             return dU;
         }
     }

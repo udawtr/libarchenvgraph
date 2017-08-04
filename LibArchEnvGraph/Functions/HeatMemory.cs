@@ -18,7 +18,13 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 熱量の変化量を受け取ります
         /// </summary>
-        public List<IVariable<double>> HeatIn { get; set; } = new List<IVariable<double>>();
+        public IVariable<double> HeatIn { get; set; } 
+
+        public HeatMemory()
+        {
+            _prev = _current = 0.0;
+        }
+
 
         /// <summary>
         /// 初期化
@@ -27,6 +33,7 @@ namespace LibArchEnvGraph.Functions
         public void Set(double initialU)
         {
             this._prev = initialU;
+            this._current = initialU;
         }
 
         public void Commit(int t)
@@ -38,7 +45,18 @@ namespace LibArchEnvGraph.Functions
         {
             if( last_t != t)
             {
-                _current = _prev + HeatIn.Sum(x => x.Get(t));
+                _prev = _current;
+
+                var J = HeatIn.Get(t);
+                _current += J;
+                System.Diagnostics.Debug.Assert(!Double.IsNaN(_current));
+
+                //if (_current < 0.0)
+                //{
+                //    _current = 0.0;
+                //}
+                System.Diagnostics.Debug.Assert(_current >= 0.0);
+
                 last_t = t;
             }
             return _current;

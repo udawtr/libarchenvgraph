@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Functions
 {
     /// <summary>
-    /// 熱量から温度への変換
+    /// 熱量から温度 [K] への変換
     /// </summary>
     public class HeatToTemp : IVariable<double>
     {
@@ -24,12 +24,15 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 熱量 [J]
         /// </summary>
-        public IVariable<double> U { get; set; }
+        public IVariable<double> Heat { private get; set; }
 
         public double Get(int t)
         {
             var C = cro * 1000 * V;
-            var T = U.Get(t) / C;
+            var T = Heat.Get(t) / C;
+
+            System.Diagnostics.Debug.Assert(T >= 0.0);
+
             return T;
         }
     }

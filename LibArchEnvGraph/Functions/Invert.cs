@@ -20,7 +20,11 @@ namespace LibArchEnvGraph.Functions
 
         public double Get(int t)
         {
-            return -1.0 * var_in.Get(t);
+            var v = var_in.Get(t);
+
+            System.Diagnostics.Debug.Assert(!Double.IsNaN(v));
+
+            return -1.0 * v;
         }
     }
 }

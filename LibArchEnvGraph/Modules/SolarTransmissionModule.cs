@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 透過日射を計算するブロック
+    /// 透過日射を計算するモジュール
     /// </summary>
     public class SolarTransmissionModule : BaseModule
     {
@@ -50,7 +50,7 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 透過日射熱取得量 QGT [W]
         /// </summary>
-        public IVariable<double> QGT { get; private set; }
+        public IVariable<double> HeatOut { get; private set; } = new LinkVariable<double>();
 
         #endregion
 
@@ -96,7 +96,6 @@ namespace LibArchEnvGraph.Modules
             this.DirectionCosine = new IncidentAngleCosine(
                 tiltAngle: tiltAngle,
                 azimuthAngle: azimuthAngle,
-                tiltAngleCos: tiltAngleCos,
                 solarPosition: solarPosition
             );
 
@@ -114,13 +113,14 @@ namespace LibArchEnvGraph.Modules
                 directionCosine: DirectionCosine
             );
 
-            //透過日射熱
-            QGT = new WindowThroughSolar(
+            //透過日射熱 [W]
+            (HeatOut as LinkVariable<double>).Link = new WindowThroughSolar(
                 area: area,
                 solarThroughRate: solarThroughRate,
                 directionCosine: DirectionCosine,
                 solarPositionSource: solarPosition,
-                tiltSolarRadiation: TiltSolarRadiation
+                ID: TiltSolarRadiation.DirectOut,
+                Id: TiltSolarRadiation.DiffusedOut
             );
         }
     }

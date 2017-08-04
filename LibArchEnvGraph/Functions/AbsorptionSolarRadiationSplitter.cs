@@ -76,7 +76,7 @@ namespace LibArchEnvGraph.Functions
         private bool Inited_Sol = false;
 
         /// <summary>
-        /// 吸収日射量の取得 P.16(56)
+        /// 吸収日射量の取得
         /// </summary>
         /// <returns>吸収日射量 [W/m2] Sol_ikn</returns>
         private double GetAbsorbingSolarRadiationTo(int n)

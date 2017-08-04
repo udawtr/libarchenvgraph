@@ -13,12 +13,12 @@ namespace LibArchEnvGraph.Functions
     public class NaturalConvectiveHeatTransferRate : IVariable<double>
     {
         /// <summary>
-        /// 固体(壁体)の表面温度 [℃]
+        /// 固体(壁体)の表面温度 [K]
         /// </summary>
         public IVariable<double> Ts { get; set; }
 
         /// <summary>
-        /// 流体(空気)の温度 [℃]
+        /// 流体(空気)の温度 [K]
         /// </summary>
         public IVariable<double> Tf { get; set; }
 
@@ -44,7 +44,11 @@ namespace LibArchEnvGraph.Functions
 
         public double Get(int t)
         {
-            var alpha_c = cValue * Math.Pow(Ts.Get(t) - Tf.Get(t), 0.25);
+            var dT = Math.Abs(Ts.Get(t) - Tf.Get(t));
+            var alpha_c = cValue * Math.Pow(dT, 0.25);
+
+            System.Diagnostics.Debug.Assert(!Double.IsNaN(alpha_c));
+
             return alpha_c;
         }
     }

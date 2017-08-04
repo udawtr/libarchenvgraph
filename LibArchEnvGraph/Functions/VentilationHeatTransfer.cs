@@ -22,12 +22,12 @@ namespace LibArchEnvGraph.Functions
         public double ro_air { get; set; } = 1.024;
 
         /// <summary>
-        /// 固体(壁体)の表面温度 [℃]
+        /// 固体(壁体)の表面温度 [K]
         /// </summary>
         public IVariable<double> Ts { get; set; }
 
         /// <summary>
-        /// 流体(空気)の温度 [℃]
+        /// 流体(空気)の温度 [K]
         /// </summary>
         public IVariable<double> Tf { get; set; }
 

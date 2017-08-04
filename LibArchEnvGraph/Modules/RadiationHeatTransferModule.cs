@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 放射熱伝達ブロック
+    /// 放射熱伝達モジュール
     /// </summary>
     /// <seealso cref="Functions.StefanBolzmann"/>
     public class RadiationHeatTransferModule : BaseModule
@@ -30,34 +30,34 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 灰色体1の表面温度 [K]
         /// </summary>
-        public IVariable<double> T1 { get; set; }
+        public IVariable<double> TempIn1 { get; set; }
 
         /// <summary>
         /// 灰色体2の表面温度 [K]
         /// </summary>
 
-        public IVariable<double> T2 { get; set; }
+        public IVariable<double> TempIn2 { get; set; }
 
         /// <summary>
         /// 灰色体1の熱移動量 [J/s]
         /// </summary>
-        public IVariable<double> dU1 { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatOut1 { get; private set; } = new LinkVariable<double>();
 
 
         /// <summary>
         /// 灰色体2の熱移動量 [J/s]
         /// </summary>
-        public IVariable<double> dU2 { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatOut2 { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 初期化
         /// </summary>
         public override void Init(FunctionFactory F)
         {
-            var baseFunction = F.StefanBolzmann(F12, T1, T2, e1, e2);
+            var baseFunction = F.StefanBolzmann(F12, TempIn1, TempIn2, e1, e2);
 
-            (dU1 as LinkVariable<double>).Link = F.Invert(baseFunction);
-            (dU2 as LinkVariable<double>).Link = baseFunction;
+            (HeatOut1 as LinkVariable<double>).Link = F.Invert(baseFunction);
+            (HeatOut2 as LinkVariable<double>).Link = baseFunction;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 換気熱移動ブロック
+    /// 換気熱移動モジュール
     /// </summary>
     public class VentilationHeatTransferModule : BaseModule
     {

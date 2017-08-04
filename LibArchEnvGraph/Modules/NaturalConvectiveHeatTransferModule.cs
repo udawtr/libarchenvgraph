@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 自然対流伝熱ブロック
+    /// 自然対流伝熱モジュール
     /// </summary>
     /// <seealso cref="ConvectiveHeatTransferModule"/>
     /// <seealso cref="NaturalConvectiveHeatTransferRate"/>
@@ -22,12 +22,12 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 固体(壁体)の表面温度 [℃]
         /// </summary>
-        public IVariable<double> TsIn { get; set; }
+        public IVariable<double> TempSolidIn { get; set; }
 
         /// <summary>
         /// 流体(空気)の温度 [℃]
         /// </summary>
-        public IVariable<double> TfIn { get; set; }
+        public IVariable<double> TempFluidIn { get; set; }
 
         /// <summary>
         /// c値(自然対流作用の程度)
@@ -38,12 +38,12 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 流体(空気)の移動熱量 [J/s]
         /// </summary>
-        public IVariable<double> dUfOut { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatflowFluidOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 固体(壁体)の移動熱量 [J/s]
         /// </summary>
-        public IVariable<double> dUsOut { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatflowSolidOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 初期化
@@ -52,23 +52,23 @@ namespace LibArchEnvGraph.Modules
         {
             var alpha_c = new NaturalConvectiveHeatTransferRate
             {
-                Ts = TsIn,
-                Tf = TfIn,
+                Ts = TempSolidIn,
+                Tf = TempFluidIn,
                 cValue = cValue
             };
 
             var baseModule = new ConvectiveHeatTransferModule
             {
                 S = S,
-                Ts = TsIn,
-                Tf = TfIn,
+                TempSolidIn = TempSolidIn,
+                TempFluidIn = TempFluidIn,
                 alpha_c = alpha_c
             };
 
             baseModule.Init(F);
 
-            (dUsOut as LinkVariable<double>).Link = baseModule.dUs;
-            (dUfOut as LinkVariable<double>).Link = baseModule.dUf;
+            (HeatflowSolidOut as LinkVariable<double>).Link = baseModule.HeatSolidOut;
+            (HeatflowFluidOut as LinkVariable<double>).Link = baseModule.HeatFluidOut;
         }
     }
 }

@@ -20,15 +20,16 @@ namespace LibArchEnvGraph.Functions
 
         private readonly IVariable<ISolarPositionData> SolarPosition;
 
-        private readonly SolarRadiationTilterModule TiltSolarRadiation;
+        private readonly IVariable<double> ID, Id;
 
-        public WindowThroughSolar(double area, double solarThroughRate, IVariable<double> directionCosine, IVariable<ISolarPositionData> solarPositionSource, SolarRadiationTilterModule tiltSolarRadiation)
+        public WindowThroughSolar(double area, double solarThroughRate, IVariable<double> directionCosine, IVariable<ISolarPositionData> solarPositionSource, IVariable<double> ID, IVariable<double> Id)
         {
             this.Area = area;
             this.SolarThroughRate = solarThroughRate;
             this.DirectionCosine = directionCosine;
             this.SolarPosition = solarPositionSource;
-            this.TiltSolarRadiation = tiltSolarRadiation;
+            this.ID = ID;
+            this.Id = Id;
         }
 
 
@@ -54,13 +55,13 @@ namespace LibArchEnvGraph.Functions
             //日射量 [W/m2]
 
             //傾斜面直達日射
-            double ID = TiltSolarRadiation.ID.Get(n);
+            double ID = this.ID.Get(n);
 
             //傾斜面拡散日射
-            double Id = TiltSolarRadiation.Id.Get(n);
+            double Id = this.Id.Get(n);
 
             //傾斜面全天日射量
-            double Iw = TiltSolarRadiation.Iw.Get(n);
+            double Iw = ID + Id;
 
             //窓の透過日射熱取得・吸収日射熱取得
 
