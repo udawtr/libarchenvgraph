@@ -70,8 +70,6 @@ namespace LibArchEnvGraph
 
             var G = Build();
 
-            //TODO:夜間放射, 外壁へ日射吸熱、地面との熱伝導
-
             G.Init(F);
 
             int t = BeginDay * (24 * 60 * 60 / TickSecond);
@@ -207,6 +205,7 @@ namespace LibArchEnvGraph
 
                 #endregion
 
+
                 #region  相互放射
                 if (Nw >= 2)
                 {
@@ -280,13 +279,40 @@ namespace LibArchEnvGraph
             #region 外気との自然対流熱移動
             for (int i = 0; i < House.OuterSurfaces.Count; i++)
             {
+                var wall = House.OuterSurfaces[i].Wall;
                 var _wall = wallDic[House.OuterSurfaces[i].Wall];
+
+                #region 相当外気温度(SAT)
+
+                var cos = F.IncidentAngleCosine(wall.TiltAngle, wall.AzimuthAngle, sol_pos);
+                var ID = F.DirectSolarRadiation(TickSecond, BeginDay, TotalDays, solarRadiation, sol_pos);
+                var Id = F.Subtract(solarRadiation, ID);
+
+                //直達日射(傾斜)
+                var J_dt = F.TiltDirectSolarRadiation(cos, ID);
+
+                //天空日射(傾斜)
+                var J_st = F.TiltDiffusedSolarRadiation(1, wall.GroundReturnRate, sol_pos, ID, Id);
+
+                //反射日射
+                var J_h = F.Add(ID, Id);
+                var J_rt = F.Function(t => (1.0 - (1.0 + cos.Get(t)) / 2) * 0.25 * J_h.Get(t));
+
+                //日射(傾斜)
+                var J_t = F.Concat(J_dt, J_st, J_rt);
+
+                //実効放射
+                var J_e = F.Brunt(wall.TiltAngle * Math.PI / 180, outsideTemperature, F.Variable(4.28), F.Variable(0.8), F.Variable(1));
+                var SAT = F.SAT(To: outsideTemperature, J: J_t, J_e: J_e);
+
+                #endregion
+
 
                 var nv = new NaturalConvectiveHeatTransferModule
                 {
                     cValue = NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
                     S = _wall.S,
-                    TempFluidIn = outsideTemperature
+                    TempFluidIn = SAT
                 };
 
                 IVariable<double> T;

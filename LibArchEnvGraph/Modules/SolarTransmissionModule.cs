@@ -100,7 +100,7 @@ namespace LibArchEnvGraph.Modules
             );
 
             //直達日射
-            var directSolarRadiation = new DirectSolarRadiation(tickTime, beginDay, days, solarRadiation, solarPosition);
+            var directSolarRadiation = F.DirectSolarRadiation(tickTime, beginDay, days, solarRadiation, solarPosition);
             var diffusedSolarRadiation = F.Subtract(solarRadiation, directSolarRadiation);
 
             //傾斜日射

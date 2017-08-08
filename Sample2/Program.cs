@@ -52,11 +52,11 @@ namespace Sample2
                     },
                     Walls = new List<Wall>
                     {
-                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 2.0 },
-                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 6.0, IsCeiling = true },
-                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, IsFloor = true },
-                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0 },
-                        new Wall { Rambda = 0.776, cro = 2022, depth= 0.05, S= 2.0, IsOpen = true, AzimuthAngle = 20, GroundReturnRate = 0.2, SolarThroughRate = 0.9 }
+                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 2.0, TiltAngle = 90, AzimuthAngle = 00 },
+                        new Wall { Rambda = 0.776, cro = 2022, depth= 0.05, S= 2.0, IsOpen = true, TiltAngle = 90, AzimuthAngle = 0, GroundReturnRate = 0.2, SolarThroughRate = 0.9 },
+                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 6.0, TiltAngle = 00, AzimuthAngle = 90, IsCeiling = true },
+                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = 180, IsFloor = true },
+                        new Wall { Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = -90},
                     }
                 }
             };

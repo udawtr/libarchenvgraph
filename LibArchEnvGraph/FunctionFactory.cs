@@ -42,6 +42,14 @@ namespace LibArchEnvGraph
         }
 
         /// <summary>
+        /// 多変数加算
+        /// </summary>
+        public virtual IVariable<double> Concat(params IVariable<double>[] varin)
+        {
+            return new Functions.Concat(varin);
+        }
+
+        /// <summary>
         /// 減算
         /// </summary>
         public virtual IVariable<double> Subtract(IVariable<double> a, IVariable<double> b)
@@ -298,6 +306,27 @@ namespace LibArchEnvGraph
         public virtual IVariable<double> SplitQGT(IVariable<double> QGT, double area, double solarTransmissionDistributionRate)
         {
             return new Functions.AbsorptionSolarRadiationSplitter(QGT, area, solarTransmissionDistributionRate);
+        }
+
+        /// <summary>
+        /// ブラントの式による実効放射量[W/m2]の取得
+        /// </summary>
+        /// <param name="theta">大気放射到達面の傾斜角 [rad] (鉛直=Math.PI/2, 水平=0)</param>
+        /// <param name="Ta">地表付近の空気の絶対温度 [K]</param>
+        /// <param name="f">地表付近の空気の水蒸気分圧 [mmHg]</param>
+        /// <param name="k">雲高によって決まる修正定数(上層雲時: 0.8, 中層雲時: 0.3, 下層雲時: 0.15)</param>
+        /// <param name="c">雲量(快晴:0 ～ 全天雲:10)</param>
+        /// <returns>実効放射量[W/m2]</returns>
+        public virtual IVariable<double> Brunt(double theta, IVariable<double> Ta, IVariable<double> f, IVariable<double> k, IVariable<double> c)
+        {
+            return new Functions.Brunt
+            {
+                theta = theta,
+                Ta = Ta,
+                f = f,
+                k = k,
+                c = c
+            };
         }
 
         #endregion
