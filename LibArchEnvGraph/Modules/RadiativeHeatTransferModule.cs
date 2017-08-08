@@ -10,7 +10,7 @@ namespace LibArchEnvGraph.Modules
     /// 放射熱伝達モジュール
     /// </summary>
     /// <seealso cref="Functions.StefanBolzmann"/>
-    public class RadiationHeatTransferModule : BaseModule
+    public class RadiativeHeatTransferModule : BaseModule
     {
         /// <summary>
         /// 灰色体1の放射率 [-]

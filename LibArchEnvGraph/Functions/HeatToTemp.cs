@@ -31,8 +31,6 @@ namespace LibArchEnvGraph.Functions
             var C = cro * 1000 * V;
             var T = Heat.Get(t) / C;
 
-            System.Diagnostics.Debug.Assert(T >= 0.0);
-
             return T;
         }
     }

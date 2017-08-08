@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Youworks.Text;
 
-namespace Sample2
+namespace LibArchEnvGraph
 {
     [CSVFile(HasHeader = false, SkipRowCount = 6)]
     public class OutsideTemperatureCSVRow

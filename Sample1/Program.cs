@@ -37,8 +37,8 @@ namespace Sample1
                 TempSolidIn = wall.TempOut,
                 TempFluidIn = air.TempOut
             };
-            wall.HeatFlowIn.Add(nv.HeatflowSolidOut);
-            air.HeatFlowIn.Add(nv.HeatflowFluidOut);
+            wall.HeatIn.Add(nv.HeatSolidOut);
+            air.HeatIn.Add(nv.HeatFluidOut);
 
 
             //初期化
@@ -54,7 +54,7 @@ namespace Sample1
             {
                 container.Commit(t);
 
-                Console.WriteLine($"{wall.TempOut.Get(t)}, {air.TempOut.Get(t)}, {nv.HeatflowSolidOut.Get(t)}, {nv.HeatflowFluidOut.Get(t)}");
+                Console.WriteLine($"{wall.TempOut.Get(t)}, {air.TempOut.Get(t)}, {nv.HeatSolidOut.Get(t)}, {nv.HeatFluidOut.Get(t)}");
             }
         }
     }

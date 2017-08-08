@@ -37,14 +37,20 @@ namespace LibArchEnvGraph.Modules
 
         private List<HeatCapacityModule> heatCapacityModuleList;
 
-        private List<HeatConductionModule> heatConductionModuleList;
+        private List<ConductiveHeatTransferModule> conductiveModuleList;
 
         public List<IVariable<double>> HeatIn1 { get; private set; }
 
+        /// <summary>
+        /// 出力温度 [K]
+        /// </summary>
         public LinkVariable<double> TempOut1 { get; private set; }
 
         public List<IVariable<double>> HeatIn2 { get; private set; }
 
+        /// <summary>
+        /// 出力温度 [K]
+        /// </summary>
         public LinkVariable<double> TempOut2 { get; private set; }
 
         public SerialHeatConductionModule()
@@ -55,7 +61,7 @@ namespace LibArchEnvGraph.Modules
             TempOut2 = new LinkVariable<double>();
 
             heatCapacityModuleList = new List<HeatCapacityModule>();
-            heatConductionModuleList = new List<HeatConductionModule>();
+            conductiveModuleList = new List<ConductiveHeatTransferModule>();
         }
 
         public override void Init(FunctionFactory F)
@@ -73,7 +79,7 @@ namespace LibArchEnvGraph.Modules
 
             for (int i = 0; i < n_slice - 1; i++)
             {
-                heatConductionModuleList.Add(new HeatConductionModule
+                conductiveModuleList.Add(new ConductiveHeatTransferModule
                 {
                     dx = dx,
                     Rambda = Rambda,
@@ -84,15 +90,15 @@ namespace LibArchEnvGraph.Modules
 
             for (int i = 0; i < n_slice - 1; i++)
             {
-                heatCapacityModuleList[i].HeatFlowIn.Add(heatConductionModuleList[i].HeatOut1);
-                heatCapacityModuleList[i+1].HeatFlowIn.Add(heatConductionModuleList[i].HeatOut2);
+                heatCapacityModuleList[i].HeatIn.Add(conductiveModuleList[i].HeatOut1);
+                heatCapacityModuleList[i+1].HeatIn.Add(conductiveModuleList[i].HeatOut2);
 
-                heatConductionModuleList[i].TempIn1 = heatCapacityModuleList[i].TempOut;
-                heatConductionModuleList[i].TempIn2 = heatCapacityModuleList[i + 1].TempOut;
+                conductiveModuleList[i].TempIn1 = heatCapacityModuleList[i].TempOut;
+                conductiveModuleList[i].TempIn2 = heatCapacityModuleList[i + 1].TempOut;
             }
 
-            heatCapacityModuleList[0].HeatFlowIn.Add(F.Multiply(dt, F.Concat(HeatIn1)));
-            heatCapacityModuleList[n_slice - 1].HeatFlowIn.Add(F.Multiply(dt, F.Concat(HeatIn2)));
+            heatCapacityModuleList[0].HeatIn.Add(F.Multiply(dt, F.Concat(HeatIn1)));
+            heatCapacityModuleList[n_slice - 1].HeatIn.Add(F.Multiply(dt, F.Concat(HeatIn2)));
 
             TempOut1.Link = heatCapacityModuleList[0].TempOut;
             TempOut2.Link = heatCapacityModuleList[n_slice - 1].TempOut;
@@ -100,15 +106,14 @@ namespace LibArchEnvGraph.Modules
             for (int i = 0; i < n_slice; i++)
             {
                 heatCapacityModuleList[i].Init(F);
-                heatCapacityModuleList[i].SetTemperature(10 + 273.15);
             }
             for (int i = 0; i < n_slice  -1; i++)
             {
-                heatConductionModuleList[i].Init(F);
+                conductiveModuleList[i].Init(F);
             }
 
             Modules.AddRange(heatCapacityModuleList);
-            Modules.AddRange(heatConductionModuleList);
+            Modules.AddRange(conductiveModuleList);
         }
     }
 }

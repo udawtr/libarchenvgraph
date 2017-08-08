@@ -36,6 +36,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LibCSV, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LibCSV.1.1.3\lib\net40\LibCSV.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,8 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CSVSource.cs" />
+    <Compile Include="Simulator.cs" />
     <Compile Include="Functions\Concat.cs" />
+    <Compile Include="Functions\Memory.cs" />
     <Compile Include="Functions\KelvinToCelsius.cs" />
     <Compile Include="House.cs" />
     <Compile Include="Modules\BaseModule.cs" />
@@ -69,7 +74,6 @@
     <Compile Include="Functions\Subtract.cs" />
     <Compile Include="Functions\Multiply.cs" />
     <Compile Include="Functions\Fourier.cs" />
-    <Compile Include="Functions\HeatMemory.cs" />
     <Compile Include="Functions\HeatToTemp.cs" />
     <Compile Include="Functions\IncidentAngleCosine.cs" />
     <Compile Include="Functions\Add.cs" />
@@ -89,7 +93,9 @@
     <Compile Include="IConstant.cs" />
     <Compile Include="IGateVariable.cs" />
     <Compile Include="ISolarPositionData.cs" />
+    <Compile Include="OutsideTemperatureCSVRow.cs" />
     <Compile Include="Room.cs" />
+    <Compile Include="SolarRadiationCSVRow.cs" />
     <Compile Include="SolarRadiationData.cs" />
     <Compile Include="ISolarRadiationData.cs" />
     <Compile Include="IVariable.cs" />
@@ -102,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

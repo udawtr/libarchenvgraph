@@ -68,9 +68,11 @@ namespace LibArchEnvGraph.Functions
 
         public double Get(int index)
         {
-            if (Inited_Sol == false) Init();
+            return GetAbsorbingSolarRadiationTo(index);
 
-            return Sol[index];
+            //if (Inited_Sol == false) Init();
+
+            //return Sol[index];
         }
 
         private bool Inited_Sol = false;

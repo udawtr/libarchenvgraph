@@ -11,6 +11,17 @@ namespace LibArchEnvGraph
     /// </summary>
     public class FunctionFactory
     {
+        private static FunctionFactory _singleton = null;
+
+        public static FunctionFactory Default
+        {
+            get
+            {
+                if (_singleton == null) _singleton = new FunctionFactory();
+                return _singleton;
+            }
+        }
+
 
         #region 基本演算
 
@@ -96,23 +107,23 @@ namespace LibArchEnvGraph
             return new Functions.DataInterpolator(original, scaleFactor);
         }
 
+        /// <summary>
+        /// 記憶
+        /// </summary>
+        public virtual IGateVariable<double> Memory(IVariable<double> dataIn)
+        {
+            return new Functions.Memory
+            {
+                DataIn = dataIn
+            };
+        }
+
         #endregion
 
         #region 熱量と温度
 
         /// <summary>
-        /// 熱量
-        /// </summary>
-        public virtual IGateVariable<double> HeatMemory(IVariable<double> heatIn)
-        {
-            return new Functions.HeatMemory
-            {
-                HeatIn = heatIn
-            };
-        }
-
-        /// <summary>
-        /// 温度
+        /// 温度 [K]
         /// </summary>
         public virtual IVariable<double> Temperature(double cro, double V, IVariable<double> heat)
         {

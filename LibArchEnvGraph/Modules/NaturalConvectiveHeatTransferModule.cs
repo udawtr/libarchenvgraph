@@ -20,12 +20,12 @@ namespace LibArchEnvGraph.Modules
         public double S { get; set; }
 
         /// <summary>
-        /// 固体(壁体)の表面温度 [℃]
+        /// 固体(壁体)の表面温度 [K]
         /// </summary>
         public IVariable<double> TempSolidIn { get; set; }
 
         /// <summary>
-        /// 流体(空気)の温度 [℃]
+        /// 流体(空気)の温度 [K]
         /// </summary>
         public IVariable<double> TempFluidIn { get; set; }
 
@@ -38,12 +38,12 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 流体(空気)の移動熱量 [J/s]
         /// </summary>
-        public IVariable<double> HeatflowFluidOut { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatFluidOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 固体(壁体)の移動熱量 [J/s]
         /// </summary>
-        public IVariable<double> HeatflowSolidOut { get; private set; } = new LinkVariable<double>();
+        public IVariable<double> HeatSolidOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 初期化
@@ -67,8 +67,8 @@ namespace LibArchEnvGraph.Modules
 
             baseModule.Init(F);
 
-            (HeatflowSolidOut as LinkVariable<double>).Link = baseModule.HeatSolidOut;
-            (HeatflowFluidOut as LinkVariable<double>).Link = baseModule.HeatFluidOut;
+            (HeatSolidOut as LinkVariable<double>).Link = baseModule.HeatSolidOut;
+            (HeatFluidOut as LinkVariable<double>).Link = baseModule.HeatFluidOut;
         }
     }
 }

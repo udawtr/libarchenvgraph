@@ -11,7 +11,7 @@ namespace LibArchEnvGraph.Modules
     /// 熱伝導モジュール
     /// </summary>
     /// <seealso cref="Fourier"/>
-    public class HeatConductionModule : BaseModule
+    public class ConductiveHeatTransferModule : BaseModule
     {
         /// <summary>
         /// 熱伝導率 [W/mK]

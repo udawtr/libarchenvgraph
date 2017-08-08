@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 相互放射モジュール
     /// </summary>
-    /// <seealso cref="RadiationHeatTransferModule"/>
+    /// <seealso cref="RadiativeHeatTransferModule"/>
     public class MutualRadiationModule : ContainerModule
     {
         private int N;
@@ -48,7 +48,7 @@ namespace LibArchEnvGraph.Modules
                 {
                     for (int j = i + 1; j < N; j++)
                     {
-                        var R = new RadiationHeatTransferModule
+                        var R = new RadiativeHeatTransferModule
                         {
                             //TODO: 放射の収支を無視した値になっているので真面目の解く
                             F12 = 1.0 / (N - 1),

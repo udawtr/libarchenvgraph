@@ -86,7 +86,7 @@ namespace LibArchEnvGraphTest
             target.T1 = new Variable<double>(20.0 + 273.15);
             target.T2 = new Variable<double>(10.0 + 273.15);
 
-            var dU = 0.85 * 0.90 * 0.2 * (Math.Pow(20.0 + 273.15, 4.0) - Math.Pow(10.0 + 273.15, 4.0));
+            var dU = 0.85 * 0.90 * 0.2 * 5.67 * (Math.Pow((20.0 + 273.15) / 100, 4.0) - Math.Pow((10.0 + 273.15) / 100, 4.0));
 
             Assert.AreEqual(dU, target.Get(0));
         }
@@ -108,26 +108,26 @@ namespace LibArchEnvGraphTest
         }
 
         [TestMethod]
-        public void HeatMemoryTest()
+        public void MemoryTest()
         {
-            HeatMemory m = new HeatMemory();
-            m.HeatIn = new Variable<double>(t => t + 1);
+            Memory m = new Memory();
+            m.DataIn = new Variable<double>(t => t + 1);
             m.Set(10);
 
             //初期値確認
             Assert.AreEqual(10.0, m.Get(0));
 
             m.Commit(0);
-            Assert.AreEqual(10.0, m.Get(0));
+            Assert.AreEqual(0.0, m.Get(0));
 
             m.Commit(1);
-            Assert.AreEqual(11.0, m.Get(1));
+            Assert.AreEqual(1.0, m.Get(1));
 
             m.Commit(2);
-            Assert.AreEqual(13.0, m.Get(2));
+            Assert.AreEqual(2.0, m.Get(2));
 
             m.Commit(3);
-            Assert.AreEqual(16.0, m.Get(3));
+            Assert.AreEqual(3.0, m.Get(3));
         }
 
         [TestMethod]

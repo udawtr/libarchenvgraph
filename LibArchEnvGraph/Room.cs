@@ -31,18 +31,5 @@ namespace LibArchEnvGraph
         /// 室温 [℃] 
         /// </summary>
         public IVariable<double> RoomTemperature { get; set; }
-
-        /// <summary>
-        /// 計算グラフの取得
-        /// </summary>
-        public ICalculationGraph GetCalcuationGraph(double dt)
-        {
-            return new HeatCapacityModule()
-            {
-                cro = cro,
-                V = V,
-                dt = dt,
-            };
-        }
     }
 }

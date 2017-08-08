@@ -25,35 +25,45 @@ namespace LibArchEnvGraph.Modules
         public double dt { get; set; } = 1.0;
 
         /// <summary>
-        /// 温度 [℃]
+        /// 温度 [K]
         /// </summary>
         public IVariable<double> TempOut { get; private set; } = new LinkVariable<double>();
 
         /// <summary>
         /// 熱流 [W]
         /// </summary>
-        public List<IVariable<double>> HeatFlowIn { get; private set; } = new List<IVariable<double>>();
+        public List<IVariable<double>> HeatIn { get; private set; } = new List<IVariable<double>>();
 
-        private IVariable<double> _temp;
-
-        private IGateVariable<double> _heat;
+        private IGateVariable<double> _memT;
 
         public void Init(FunctionFactory F)
         {
-            _heat = F.HeatMemory(F.Multiply(dt, F.Concat(HeatFlowIn)));
-            _temp = F.Temperature(cro, V, _heat);
+            //熱流を合算し、dtを掛ける
+            var _sumQ = F.Multiply(dt, F.Concat(HeatIn));
 
-            (TempOut as LinkVariable<double>).Link = _temp;
+            //温度差分 [K]
+            var _dT = F.Temperature(cro, V, _sumQ);
+
+            //記録している温度に温度差分を加える
+            var _memTin = new LinkVariable<double>();
+            var _add = F.Add(_memTin, _dT);
+
+            //温度を記憶する
+            _memT = F.Memory(_add);
+            _memTin.Link = _memT;   //加算入力と温度出力を連結
+
+            //記録した温度をTempOutに接続する
+            (TempOut as LinkVariable<double>).Link = _memT;
         }
 
         public void SetTemperature(double initialTemp)
         {
-            _heat.Set(initialTemp * cro * 1000 * V);
+            _memT.Set(initialTemp);
         }
 
         public void Commit(int t)
         {
-            _heat.Commit(t);
+            _memT.Commit(t);
         }
 
         /// <summary>

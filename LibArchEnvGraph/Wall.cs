@@ -9,6 +9,9 @@ namespace LibArchEnvGraph
 {
     public class Wall
     {
+        /// <summary>
+        /// 熱伝導率 [W/mK]
+        /// </summary>
         public double Rambda { get; set; }
 
         public double cro { get; set; }
@@ -33,18 +36,5 @@ namespace LibArchEnvGraph
         /// 開口部
         /// </summary>
         public bool IsOpen { get; set; }
-
-        public ICalculationGraph GetCalcuationGraph(double dt)
-        {
-            return new SerialHeatConductionModule()
-            {
-                cro = cro,
-                depth = depth,
-                S = S,
-                Rambda = Rambda,
-                dt = dt,
-                n_slice = 5,
-            };
-        }
     }
 }

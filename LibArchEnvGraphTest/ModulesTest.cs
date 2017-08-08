@@ -22,7 +22,7 @@ namespace LibArchEnvGraphTest
             };
 
             //毎時 100000J 加熱する
-            target.HeatFlowIn.Add(new Variable<double>(100000));
+            target.HeatIn.Add(new Variable<double>(100000));
 
             target.Init(F);
 
@@ -44,12 +44,12 @@ namespace LibArchEnvGraphTest
         }
 
         [TestMethod]
-        public void HeatConductionModuleTest()
+        public void ConductiveHeatTransferModuleTest()
         {
             var F = new FunctionFactory();
 
 
-            var target = new HeatConductionModule
+            var target = new ConductiveHeatTransferModule
             {
                 
             };
@@ -100,8 +100,8 @@ namespace LibArchEnvGraphTest
             target.Init(F);
 
             //熱流の取得
-            var q_f_to_s = target.HeatflowSolidOut.Get(0);
-            var q_s_to_f = target.HeatflowFluidOut.Get(0);
+            var q_f_to_s = target.HeatSolidOut.Get(0);
+            var q_s_to_f = target.HeatFluidOut.Get(0);
 
             //外気から壁への熱流は40W
             // a = 1.5 * (10 - 0) ^ 0.25 = 2.667419
@@ -133,7 +133,7 @@ namespace LibArchEnvGraphTest
             };
 
             wind.TempSolidIn = wall.TempOut;
-            wall.HeatFlowIn.Add(wind.HeatflowSolidOut);
+            wall.HeatIn.Add(wind.HeatSolidOut);
 
             wall.Init(F);
             wind.Init(F);
@@ -174,7 +174,7 @@ namespace LibArchEnvGraphTest
             };
 
             wind.TempSolidIn = wall.TempOut1;
-            wall.HeatIn1.Add(wind.HeatflowSolidOut);
+            wall.HeatIn1.Add(wind.HeatSolidOut);
 
             wall.Init(F);
             wind.Init(F);
