@@ -182,9 +182,15 @@ namespace LibArchEnvGraph
         /// 貫流熱の計算(定常熱計算)
         /// </summary>
         /// <returns>面積Sの貫流熱量[]</returns>
-        public virtual IVariable<double> HeatTransmission(IVariable<double> T1, IVariable<double> T2, double K, double S)
+        public virtual IVariable<double> OverallHeatTransmission(IVariable<double> T1, IVariable<double> T2, double K, double S)
         {
-            return new Variable<double>(t => K * S * (T1.Get(t) - T2.Get(t)));
+            return new Functions.OverallHeatTransmission
+            {
+                K = K,
+                S = S,
+                T1 = T1,
+                T2 = T2
+            };
         }
 
         /// <summary>
@@ -246,25 +252,17 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 直散分離(全天日射から直達日射を分離)
         /// </summary>
-        public virtual IVariable<double> DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<ISolarPositionData> solarPosition)
+        public virtual IVariable<double> DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<double> solH)
         {
-            return new Functions.DirectSolarRadiation(tickTime, beginDay, days, solarRadiation, solarPosition);
-        }
-
-        /// <summary>
-        /// 太陽位置
-        /// </summary>
-        public virtual IVariable<ISolarPositionData> SolarPosition(double Lat, double L, int tickTime, int beginDay, int days)
-        {
-            return new Functions.SolarPosition(Lat, L, tickTime, beginDay, days);
+            return new Functions.DirectSolarRadiation(tickTime, beginDay, days, solarRadiation, solH);
         }
 
         /// <summary>
         /// 入射角の方向余弦
         /// </summary>
-        public virtual IVariable<double> IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<ISolarPositionData> solarPosition)
+        public virtual IVariable<double> IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<double> solH, IVariable<double> solA)
         {
-            return new Functions.IncidentAngleCosine(tiltAngle, azimuthAngle, solarPosition);
+            return new Functions.IncidentAngleCosine(tiltAngle, azimuthAngle, solH, solA);
         }
 
         /// <summary>
@@ -278,33 +276,38 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 傾斜面拡散日射量
         /// </summary>
-        public virtual IVariable<double> TiltDiffusedSolarRadiation(double shapeFactorToSky, double groundReturnRate, IVariable<ISolarPositionData> solarPositionSource, IVariable<double> ID, IVariable<double> Id)
+        public virtual IVariable<double> TiltDiffusedSolarRadiation(double shapeFactorToSky, double groundReturnRate, IVariable<double> solH, IVariable<double> ID, IVariable<double> Id)
         {
             return new Functions.TiltDiffusedSolarRadiation
             {
                 ShapeFactorToSky = shapeFactorToSky,
                 GroundReturnRate = groundReturnRate,
-                SolarPosition = solarPositionSource,
-                DirectSolarRadiation = ID,
-                DiffusedSolarRadiation = Id
+                SolHIn = solH,
+                SolDirectIn = ID,
+                SolDiffuseIn = Id
             };
         }
 
         /// <summary>
         /// 透過日射の計算
         /// </summary>
-        public virtual IVariable<double> ThroughSolar(double area, double solarThroughRate, IVariable<double> directionCosine,
-            IVariable<ISolarPositionData> solarPositionSource,IVariable<double> ID, IVariable<double> Id)
+        public virtual IVariable<double> ThroughSolar(double area, double solarThroughRate, IVariable<double> tiltCos, IVariable<double> ID, IVariable<double> Id)
         {
-            return new Functions.WindowThroughSolar(area, solarThroughRate, directionCosine, solarPositionSource, ID, Id);
+            return new Functions.WindowThroughSolar(area, solarThroughRate, tiltCos, ID, Id);
         }
 
         /// <summary>
         /// 透過日射の分配
         /// </summary>
-        public virtual IVariable<double> SplitQGT(IVariable<double> QGT, double area, double solarTransmissionDistributionRate)
+        /// <param name="fsol">透過日射分配率 [-]</param>
+        public virtual IVariable<double> Split(IVariable<double> Q, double S, double fsol)
         {
-            return new Functions.AbsorptionSolarRadiationSplitter(QGT, area, solarTransmissionDistributionRate);
+            return new Functions.Split
+            {
+                HeatIn = Q,
+                S = S,
+                fsol = fsol
+            };
         }
 
         /// <summary>

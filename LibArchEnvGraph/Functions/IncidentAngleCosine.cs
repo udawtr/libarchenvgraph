@@ -8,6 +8,12 @@ namespace LibArchEnvGraph.Functions
 {
     /// <summary>
     /// 入射角の方向余弦
+    /// 
+    ///              +-----------+
+    ///              |           |
+    ///    SolPos -->+           +--> TiltCos
+    ///              |           |
+    ///              +-----------+
     /// </summary>
     public class IncidentAngleCosine : BaseVariable<double>
     {
@@ -20,14 +26,17 @@ namespace LibArchEnvGraph.Functions
 
         private readonly double tiltAngleCos;
 
-        private IVariable<ISolarPositionData> solpossrc { get; set; }
+        public IVariable<double> SolH { get; set; }
 
-        public IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<ISolarPositionData> solarPosition)
+        public IVariable<double> SolA { get; set; }
+
+        public IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<double> solH, IVariable<double> solA)
         {
             this.tiltAngle = tiltAngle;
             this.tiltAngleCos = Math.Cos(tiltAngle * Math.PI / 180.0);
             this.azimuthAngle = azimuthAngle;
-            this.solpossrc = solarPosition;
+            this.SolH = solH;
+            this.SolA = solA;
         }
 
         public override double Update(int n)
@@ -35,16 +44,17 @@ namespace LibArchEnvGraph.Functions
             var Ww = Math.Sin(tiltAngle * toRad) * Math.Sin(azimuthAngle * toRad);
             var Ws = Math.Sin(tiltAngle * toRad) * Math.Cos(azimuthAngle * toRad);
 
-            ISolarPositionData solPos = solpossrc.Get(n);
+            var H = SolH.Get(n) * toRad;
+            var A = SolA.Get(n) * toRad;
 
-            var Sh = Math.Sin(solPos.SolarElevationAngle * toRad);
+            var Sh = Math.Sin(H);
             var Sw = 0.0;
             var Ss = 0.0;
 
             if (Sh > 0)
             {
-                Sw = Math.Cos(solPos.SolarElevationAngle * toRad) * Math.Sin(solPos.SolarAzimuth * toRad);
-                Ss = Math.Cos(solPos.SolarElevationAngle * toRad) * Math.Cos(solPos.SolarAzimuth * toRad);
+                Sw = Math.Cos(H) * Math.Sin(A);
+                Ss = Math.Cos(H) * Math.Cos(A);
             }
 
             var temp = Sh * tiltAngleCos + Sw * Ww + Ss * Ws;

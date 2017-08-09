@@ -7,6 +7,20 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Functions
 {
+    /// <summary>
+    /// 透過日射熱 [W]
+    /// 
+    ///                       +----------+
+    ///                       |          |
+    ///   SolDirectTiltOut -->+          |
+    ///                       |          |
+    ///  SolDiffuseTiltOut -->+          +--> SolTran
+    ///                       |          |
+    ///            TiltCos -->+          |
+    ///                       |          |
+    ///                       +----------+
+    ///             
+    /// </summary>
     public class WindowThroughSolar : BaseVariable<double>
     {
         private readonly double Area;
@@ -16,20 +30,18 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 入射角の方向余弦
         /// </summary>
-        private readonly IVariable<double> DirectionCosine;
+        private readonly IVariable<double> TiltCos;
 
-        private readonly IVariable<ISolarPositionData> SolarPosition;
 
         private readonly IVariable<double> ID, Id;
 
-        public WindowThroughSolar(double area, double solarThroughRate, IVariable<double> directionCosine, IVariable<ISolarPositionData> solarPositionSource, IVariable<double> ID, IVariable<double> Id)
+        public WindowThroughSolar(double area, double solarThroughRate, IVariable<double> tiltCos, IVariable<double> SolDirectTiltOut, IVariable<double> SolDiffuseTileOut)
         {
             this.Area = area;
             this.SolarThroughRate = solarThroughRate;
-            this.DirectionCosine = directionCosine;
-            this.SolarPosition = solarPositionSource;
-            this.ID = ID;
-            this.Id = Id;
+            this.TiltCos = tiltCos;
+            this.ID = SolDirectTiltOut;
+            this.Id = SolDiffuseTileOut;
         }
 
 
@@ -42,11 +54,6 @@ namespace LibArchEnvGraph.Functions
         /// <returns></returns>
         public override double Update(int n)
         {
-            var pos = SolarPosition.Get(n);
-
-            double AS = pos.SolarAzimuth;
-            double h = pos.SolarElevationAngle;
-
             //日射透過率
             double tauN = SolarThroughRate;
             double tauD = GetDirectSolarTransmittanceRatio(n);
@@ -132,7 +139,7 @@ namespace LibArchEnvGraph.Functions
         private double GetDirectSolarTransmittanceRatio(int n)
         {
             double tau_Nik = SolarThroughRate;
-            double cos = DirectionCosine.Get(n);
+            double cos = TiltCos.Get(n);
 
             var cos_pow2 = cos * cos;
             var cos_pow3 = cos_pow2 * cos;

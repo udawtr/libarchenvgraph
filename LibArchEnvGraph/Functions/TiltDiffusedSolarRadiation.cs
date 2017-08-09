@@ -6,6 +6,34 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Functions
 {
+    /// <summary>
+    /// 傾斜面拡散日射量 [W/m2]
+    /// 
+    ///                 +-----------------+
+    ///                 |                 |
+    ///     SolPosIn -->+                 |
+    ///                 |                 |
+    ///  SolDirectIn -->+ 傾斜面拡散日射M +--> SolDiffuseTiltOut
+    ///                 |                 |
+    /// SolDiffuseIn -->+                 |
+    ///                 |                 |
+    ///                 +---+----+--------+
+    ///                     |    |
+    ///                     |    +---<-- ShapeFactorToSky
+    ///                     |
+    ///                     +---<-- GroundReturnRate
+    /// 
+    /// 入力:
+    /// - ShapeFactorToSky
+    /// - GroundReturnRate
+    /// - 太陽位置 SolPos [W/m2]
+    /// - 法線面直達日射量 SolDirectIn [W/m2]
+    /// - 拡散日射量 SolDiffuseIn [W/m2]
+    /// </summary>
+    /// <remarks>
+    /// 傾斜面拡散日射量 = 傾斜面天空日射量 + 地物反射日射
+    /// </remarks>
+    /// <seealso cref="DirectSolarRadiation"/>
     public class TiltDiffusedSolarRadiation : BaseVariable<double>
     {
         const double toRad = Math.PI / 180.0;
@@ -17,19 +45,19 @@ namespace LibArchEnvGraph.Functions
         public double GroundReturnRate { get; set; }
 
         /// <summary>
-        /// 太陽位置
+        /// 太陽高度[deg]
         /// </summary>
-        public IVariable<ISolarPositionData> SolarPosition { get; set; }
+        public IVariable<double> SolHIn { get; set; }
 
         /// <summary>
         /// 法線面直達日射量 [W/m2]
         /// </summary>
-        public IVariable<double> DirectSolarRadiation { get; set; }
+        public IVariable<double> SolDirectIn { get; set; }
 
         /// <summary>
         /// 拡散日射量 [W/m2]
         /// </summary>
-        public IVariable<double> DiffusedSolarRadiation { get; set; }
+        public IVariable<double> SolDiffuseIn { get; set; }
 
         public override double Update(int t)
         {
@@ -43,7 +71,7 @@ namespace LibArchEnvGraph.Functions
         /// <returns>IS_ikn</returns>
         private double GetSkySolarRadiation(int n)
         {
-            double I_sky = DiffusedSolarRadiation.Get(n);
+            double I_sky = SolDiffuseIn.Get(n);
 
             return ShapeFactorToSky * I_sky;
         }
@@ -53,9 +81,9 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         private double GetGroundReflectedSolarRadiation(int n)
         {
-            double IDN = DirectSolarRadiation.Get(n);   //法線面直達日射量 [W/m2]
-            double Shn = Math.Sin(SolarPosition.Get(n).SolarElevationAngle * toRad);     //太陽高度角
-            double I_sky = DiffusedSolarRadiation.Get(n);    //水平面天空日射量 [W/m2]
+            double IDN = SolDirectIn.Get(n);   //法線面直達日射量 [W/m2]
+            double Shn = Math.Sin(SolHIn.Get(n) * toRad);     //太陽高度角
+            double I_sky = SolDiffuseIn.Get(n);    //水平面天空日射量 [W/m2]
 
             return GroundReturnRate * ShapeFactorToGround * (IDN * Shn + I_sky); // P.11 (45)
         }

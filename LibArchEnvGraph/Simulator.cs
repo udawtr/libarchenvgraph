@@ -74,10 +74,6 @@ namespace LibArchEnvGraph
         /// </remarks>
         public bool UseSAT { get; set; } = false;
 
-        /// <summary>
-        /// 相互放射を解く場合はtrue
-        /// </summary>
-        public bool UseMutualRadiation { get; set; } = false;
 
         /// <summary>
         /// 壁体を定常状態で解く場合はtrue
@@ -216,7 +212,8 @@ namespace LibArchEnvGraph
 
 
             //太陽位置
-            var sol_pos = F.SolarPosition(Lat, L, TickSecond, BeginDay, TotalDays);
+            var sol_pos = new SolarPositionModule(Lat, L, TickSecond, BeginDay, TotalDays);
+            sol_pos.Init(TickSecond, BeginDay, TotalDays);
 
             foreach (var room in House.Rooms)
             {
@@ -240,8 +237,9 @@ namespace LibArchEnvGraph
                             azimuthAngle: win.AzimuthAngle,
                             groundReturnRate: win.GroundReturnRate,
                             solarThroughRate: win.SolarThroughRate,
-                            solarPosition: sol_pos,
-                            solarRadiation: solarRadiation,
+                            solH: sol_pos.SolHOut,
+                            solA: sol_pos.SolAOut,
+                            sol: solarRadiation,
                             tickTime: TickSecond,
                             beginDay: BeginDay,
                             days: TotalDays
@@ -254,41 +252,50 @@ namespace LibArchEnvGraph
                 }
 
                 //透過日射の合計 [W]
-                var sumQGT = F.Multiply(TickSecond, F.Concat(QGT));
+                var sumQGT = F.Concat(QGT);
+
+                #endregion
+
+
+                var MR = new MutualRadiationModule(Nw);
 
                 for (int i = 0; i < Nw; i++)
                 {
+                    var wall = room.Walls[i].Wall;
+                    var wallModule = wallModuleAndSurfaceNo[i].Module;
+                    var s = wallModuleAndSurfaceNo[i].SurfaceNo - 1;
+
                     if (room.Walls[i].Wall.IsOpen == false)
                     {
-                        var wall = room.Walls[i].Wall;
+                        // 透過日射の分配
+                        //                         +-------+
+                        //                         |       |
+                        //  (透過日射) -----> 熱in-+ 壁体M |  
+                        //                         |       |
+                        //                         +-------+
+                        //
 
                         //TODO: まじめの分配率の計算をする
-                        var h = F.SplitQGT(sumQGT, wall.S, 0.25);
 
-                        var s = wallModuleAndSurfaceNo[i].SurfaceNo - 1;
-                        wallModuleAndSurfaceNo[i].Module.HeatIn[s].Add(h);
-                    }
-                }
+                        var h = F.Split(sumQGT, wall.S, 0.25);
+                        h.Label = $"分配日射({wall.Name})[W]";
 
-                #endregion
-
-                #region  相互放射
-                if (UseMutualRadiation &&  Nw >= 2)
-                {
-                    var MR = new MutualRadiationModule(Nw);
-
-                    for (int i = 0; i < Nw; i++)
-                    {
-                        var wallModule = wallModuleAndSurfaceNo[i].Module;
-
-                        var s = wallModuleAndSurfaceNo[i].SurfaceNo - 1;
-                        MR.TempIn[i] = wallModule.TempOut[s];
-                        wallModule.HeatIn[s].Add(F.Multiply(TickSecond, MR.HeatOut[i]));
+                        //分配された日射を壁に入れる
+                        wallModule.HeatIn[s].Add(h);
                     }
 
-                    container.Modules.Add(MR);
+                    //相互放射の接続
+                    //  +--------+                     +-------+
+                    //  |        +-温度in <--- 温度out-+       |
+                    /// | 放射M  |                     | 壁体M |
+                    //  |        +-放射out -----> 熱in-+       |
+                    //  +--------+                     +-------+
+                    //MR.TempIn[i] = wallModule.TempOut[s];
+                    //wallModule.HeatIn[s].Add(MR.HeatOut[i]);
                 }
-                #endregion
+
+
+                //container.Modules.Add(MR);
 
                 #region 室内の対流熱移動
                 for (int i = 0; i < Nw; i++)
@@ -297,6 +304,11 @@ namespace LibArchEnvGraph
                     var wallModule = wallModuleAndSurfaceNo[i].Module;
 
                     //部屋と壁を相互接続
+                    //  +--------+                     +-------+
+                    //  |        +-温度out ---> 温度in-+       |
+                    /// | 部屋M  |                     | 壁体M |
+                    //  |        +-熱in <------- 熱out-+       |
+                    //  +--------+                     +-------+
                     wallModule.TempIn[s] = roomModule.TempOut;
                     roomModule.HeatIn.Add(wallModule.HeatOut[s]);
                 }
@@ -326,15 +338,15 @@ namespace LibArchEnvGraph
                 {
                     #region 相当外気温度(SAT)
 
-                    var cos = F.IncidentAngleCosine(wall.TiltAngle, wall.AzimuthAngle, sol_pos);
-                    var ID = F.DirectSolarRadiation(TickSecond, BeginDay, TotalDays, solarRadiation, sol_pos);
+                    var cos = F.IncidentAngleCosine(wall.TiltAngle, wall.AzimuthAngle, sol_pos.SolHOut, sol_pos.SolAOut);
+                    var ID = F.DirectSolarRadiation(TickSecond, BeginDay, TotalDays, solarRadiation, sol_pos.SolHOut);
                     var Id = F.Subtract(solarRadiation, ID);
 
                     //直達日射(傾斜)
                     var J_dt = F.TiltDirectSolarRadiation(cos, ID);
 
                     //天空日射(傾斜)
-                    var J_st = F.TiltDiffusedSolarRadiation(1, wall.GroundReturnRate, sol_pos, ID, Id);
+                    var J_st = F.TiltDiffusedSolarRadiation(1, wall.GroundReturnRate, sol_pos.SolHOut, ID, Id);
 
                     //反射日射
                     var J_h = F.Add(ID, Id);

@@ -10,6 +10,14 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 熱伝導モジュール
     /// 
+    ///               +-----------+
+    ///               |           |
+    ///    HeatIn1 -->+           +--> HeatOut1
+    ///               |  熱伝導M  |
+    ///    HeatIn2 -->+           +--> HeatOut2
+    ///               |           |
+    ///               +-----------+
+    ///
     /// 入力:
     /// - 熱伝達率 Rambda [W/mK]
     /// - 厚み dx [m]
@@ -19,8 +27,21 @@ namespace LibArchEnvGraph.Modules
     /// 出力:
     /// - 熱伝導による熱移動量 HeatOut [W]
     /// </summary>
+    /// <remarks>
+    /// 
+    ///            +-----------+
+    ///            |           |
+    /// TempIn1 -->+ F.Fourier |
+    ///            |           +--+------------------> HeatOut1
+    /// TempIn2 -->+           |  |
+    ///            |           |  |   +----------+
+    ///            +-----------+  |   |          |
+    ///                           +---+ F.Invert +---> HeatOut2
+    ///                               |          |
+    ///                               +----------+  
+    /// </remarks>
     /// <seealso cref="Fourier"/>
-    public class ConductiveHeatTransferModule : BaseModule
+    public class ConductiveHeatTransferModule : HeatTransferModule
     {
         /// <summary>
         /// 熱伝導率 [W/mK]
@@ -38,32 +59,12 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public double S { get; set; }
 
-        /// <summary>
-        /// 固体1の温度 [℃]
-        /// </summary>
-        public IVariable<double> TempIn1 { get; set; }
-
-        /// <summary>
-        /// 固体2の温度 [℃]
-        /// </summary>
-        public IVariable<double> TempIn2 { get; set; }
-
-        /// <summary>
-        /// 固体1の熱移動量 [J/s]
-        /// </summary>
-        public IVariable<double> HeatOut1 { get; private set; } = new LinkVariable<double>("固体1の熱移動量 [J/s]");
-
-        /// <summary>
-        /// 固体2の熱移動量 [J/s]
-        /// </summary>
-        public IVariable<double> HeatOut2 { get; private set; } = new LinkVariable<double>("固体2の熱移動量 [J/s]");
-
         public override void Init(FunctionFactory F)
         {
-            var fourier = F.Fourier(dx, Rambda, S, TempIn1, TempIn2);
+            var fourier = F.Fourier(dx, Rambda, S, TempIn[0], TempIn[1]);
 
-            (HeatOut1 as LinkVariable<double>).Link = fourier;
-            (HeatOut2 as LinkVariable<double>).Link = new Invert(fourier);
+            (HeatOut[0] as LinkVariable<double>).Link = fourier;
+            (HeatOut[1] as LinkVariable<double>).Link = new Invert(fourier);
         }
     }
 }

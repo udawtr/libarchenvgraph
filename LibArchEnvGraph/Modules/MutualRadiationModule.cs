@@ -9,6 +9,18 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 相互放射モジュール
     /// 
+    ///               +-------------+
+    ///               |             |
+    ///    TempIn1 -->+             +--> HeatOut1
+    ///               |  相互放射M  |
+    ///    TempIn2 -->+             +--> HeatOut2
+    ///               |             |
+    ///      ...   -->+             +-->   ...
+    ///               |             |
+    ///  TempIn(n) -->+             +--> HeatOut(n)
+    ///               |             |
+    ///               +-------------+
+    /// 
     /// 入力:
     /// - 表面温度 TempIn [K]
     /// 

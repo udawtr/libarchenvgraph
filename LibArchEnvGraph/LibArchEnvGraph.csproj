@@ -50,8 +50,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Functions\OverallHeatTransmission.cs" />
     <Compile Include="IRoomModule.cs" />
     <Compile Include="IWallModule.cs" />
+    <Compile Include="Modules\HeatTransferModule.cs" />
     <Compile Include="Modules\SteadyWallModule.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="Functions\Concat.cs" />
@@ -63,7 +65,7 @@
     <Compile Include="Modules\ConvectiveHeatTransferModule.cs" />
     <Compile Include="Modules\HeatCapacityModule.cs" />
     <Compile Include="Modules\ConductiveHeatTransferModule.cs" />
-    <Compile Include="Modules\HeatTransmissionModule.cs" />
+    <Compile Include="Modules\OverallHeatTransmissionModule.cs" />
     <Compile Include="Modules\MutualRadiationModule.cs" />
     <Compile Include="Modules\NaturalConvectiveHeatTransferModule.cs" />
     <Compile Include="Modules\SolarTransmissionModule.cs" />
@@ -71,7 +73,7 @@
     <Compile Include="Modules\UnsteadyWallModule.cs" />
     <Compile Include="Modules\VentilationHeatTransferModule.cs" />
     <Compile Include="FunctionFactory.cs" />
-    <Compile Include="Functions\AbsorptionSolarRadiationSplitter.cs" />
+    <Compile Include="Functions\Split.cs" />
     <Compile Include="Functions\Brunt.cs" />
     <Compile Include="Functions\DataInterpolator.cs" />
     <Compile Include="Functions\Subtract.cs" />
@@ -84,8 +86,7 @@
     <Compile Include="Functions\NaturalConvectiveHeatTransferRate.cs" />
     <Compile Include="Functions\NewtonCooling.cs" />
     <Compile Include="LinkVariable.cs" />
-    <Compile Include="Functions\SolarPosition.cs" />
-    <Compile Include="Modules\SolarRadiationTilterModule.cs" />
+    <Compile Include="Modules\SolarPositionModule.cs" />
     <Compile Include="Functions\DirectSolarRadiation.cs" />
     <Compile Include="Functions\StefanBolzmann.cs" />
     <Compile Include="Functions\TiltDiffusedSolarRadiation.cs" />

@@ -47,16 +47,18 @@ namespace LibArchEnvGraphTest
 
 
             //F.HeatTransmission
-            var q = F.HeatTransmission(F.Variable(20), F.Variable(0), 0.91, 6);
+            var q = F.OverallHeatTransmission(F.Variable(20), F.Variable(0), 0.91, 6);
             Assert.AreEqual(109.2, q.Get(0), 0.1);
 
             //HeatTransmissionModule
-            var wall = new HeatTransmissionModule
+            var wall = new OverallHeatTransmissionModule
             {
                 K = 0.91,
                 S = 6,
-                T1 = F.Variable(20),
-                T2 = F.Variable(0),
+                TempIn = new IVariable<double>[] {
+                    F.Variable(20),
+                    F.Variable(0)
+                }
             };
             wall.Init(F);
             Assert.AreEqual(-109.2, wall.HeatOut[0].Get(0), 0.1);
@@ -91,7 +93,7 @@ namespace LibArchEnvGraphTest
 
             var Te = F.SAT(F.Variable(0), F.Variable(600), F.Variable(100), a_s, eps, alpha_o);
             var SAT = F.SAT(F.Variable(32), F.Variable(600), F.Variable(100), a_s, eps, alpha_o);
-            var q = F.HeatTransmission(SAT, F.Variable(25), 2.0, 1.0);
+            var q = F.OverallHeatTransmission(SAT, F.Variable(25), 2.0, 1.0);
 
             Assert.AreEqual(14.3, Te.Get(0), 0.1);
             Assert.AreEqual(46.3, SAT.Get(0), 0.1);

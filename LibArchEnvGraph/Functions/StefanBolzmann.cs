@@ -44,6 +44,8 @@ namespace LibArchEnvGraph.Functions
 
             System.Diagnostics.Debug.Assert(!Double.IsNaN(dU));
 
+            System.Diagnostics.Debug.WriteLine($"[{t}] StefanBolzmann: {T1.Label}:{T1.Get(t)} -> {T2.Label}:{T2.Get(t)} = {dU} [W]");
+
             return dU;
         }
     }

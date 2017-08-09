@@ -4,12 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibArchEnvGraph.Functions
+namespace LibArchEnvGraph.Modules
 {
     /// <summary>
     /// 太陽位置の計算
+    /// 
+    ///           +---------+
+    ///           |         |
+    ///           +         +--> SolHOut
+    ///           |         |
+    ///           +         +--> SolAOut
+    ///           |         |
+    ///           +--+--+---+
+    ///              |  |
+    ///              L Lat
     /// </summary>
-    public class SolarPosition : IVariable<ISolarPositionData>
+    public class SolarPositionModule : ICalculationGraph
     {
         /// <summary>
         /// 計算対象地点の緯度(10進数) [deg]
@@ -21,6 +31,16 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public double L { get; set; } = 134.997222;
 
+        /// <summary>
+        /// 太陽高度角 [°] hn
+        /// </summary>
+        public IVariable<double> SolHOut { get; private set; }
+
+        /// <summary>
+        /// 太陽方位角 [°] An
+        /// </summary>
+        public IVariable<double> SolAOut { get; private set; }
+        
         private SolarPositionData[] data;
 
         public string Label { get; set; }
@@ -30,13 +50,16 @@ namespace LibArchEnvGraph.Functions
             return data[index];
         }
 
-        public SolarPosition(double Lat, double L, int tickTime, int beginDay, int days)
+        public SolarPositionModule(double Lat, double L, int tickTime, int beginDay, int days)
         {
             this.Lat = Lat;
             this.L = L;
             Init(tickTime, beginDay, days);
 
             this.Label = $"太陽位置 緯度:{Lat},経度:{L}";
+
+            SolHOut = new Variable<double>(t => data[t].SolarElevationAngle);
+            SolAOut = new Variable<double>(t => data[t].SolarAzimuth);
         }
 
         public void Init(int tickTime, int beginDay, int days)
@@ -102,6 +125,14 @@ namespace LibArchEnvGraph.Functions
                     }
                 }
             }
+        }
+
+        public void Init(FunctionFactory F)
+        {
+        }
+
+        public void Commit(int t)
+        {
         }
     }
 }

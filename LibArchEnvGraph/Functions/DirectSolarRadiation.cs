@@ -6,16 +6,30 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Functions
 {
+    /// <summary>
+    /// 直達日射量 [W/m2]
+    /// 
+    ///           +----------+
+    ///           |          |
+    ///  SolIn -->+          |         
+    ///           |          +--> SolDirect
+    /// SolPos -->+          |
+    ///           |          |
+    ///           +----------+
+    /// </summary>
     public class DirectSolarRadiation : IVariable<double>
     {
         /// <summary>
         /// 日射量 [MJ/m2]
         /// </summary>
-        private IVariable<double> solarRadiation;
+        private IVariable<double> SolIn;
 
         public string Label { get; set; }
 
-        private IVariable<ISolarPositionData> solarPosition;
+        /// <summary>
+        /// 太陽高度角[deg]
+        /// </summary>
+        private IVariable<double> SolH;
 
         private int tickTime;
 
@@ -30,10 +44,10 @@ namespace LibArchEnvGraph.Functions
             return data[index];
         }
 
-        public DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<ISolarPositionData> solarPosition)
+        public DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<double> solH)
         {
-            this.solarRadiation = solarRadiation;
-            this.solarPosition = solarPosition;
+            this.SolIn = solarRadiation;
+            this.SolH = solH;
             this.tickTime = tickTime;
             this.beginDay = beginDay;
             this.days = days;
@@ -55,7 +69,7 @@ namespace LibArchEnvGraph.Functions
                 {
                     for (int j = 0; j < (int)(3600 / dt); j++, off++)
                     {
-                        var H = solarRadiation.Get(off);
+                        var H = SolIn.Get(off);
                         data[off] = GetHd(H, beginDay + d, off);
                     }
                 }
@@ -64,7 +78,7 @@ namespace LibArchEnvGraph.Functions
 
         private double GetH0(int d, int t)
         {
-            var h = solarPosition.Get(t).SolarElevationAngle;
+            var h = SolH.Get(t);
             var omega = 2.0 * Math.PI / 365;
             var J = (double) d + 0.5;
             var r = 1.0;
@@ -77,7 +91,7 @@ namespace LibArchEnvGraph.Functions
 
         private double GetClearSkyIndex(double H, int d, int t)
         {
-            var h = solarPosition.Get(t).SolarElevationAngle;
+            var h = SolH.Get(t);
             var H0 = GetH0(d, t) * 3.6;
             if (H0 <= 0)
             {

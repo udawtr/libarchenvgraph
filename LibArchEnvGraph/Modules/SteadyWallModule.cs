@@ -10,6 +10,18 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 定常1次元壁体モジュール
     /// 
+    ///               +-------------+
+    ///               |             |
+    ///    HeatIn1 -->+             +--> HeatOut1
+    ///               |  非定常一次 |
+    ///    HeatIn2 -->+  元壁体M    +--> HeatOut2
+    ///               |             |
+    ///    TempIn1 -->+             +--> TempOut1
+    ///               |             |
+    ///    TempIn2 -->+             +--> TempOut2
+    ///               |             |
+    ///               +-------------+
+    /// 
     /// 入力:
     /// - 表面積 S [m2]
     /// - 室外側熱伝達率 a_o [W/m2K]
@@ -22,6 +34,25 @@ namespace LibArchEnvGraph.Modules
     /// - 室外側／室内側出力温度 TempOut [K]
     /// - 出力対流熱移動量 HeatOut [W]
     /// </summary>
+    /// <remarks>
+    /// 
+    ///              +------------+
+    ///              |            |
+    /// TempIn1  --->+            |    
+    ///              | F.Function +--+
+    /// HeatIn1  --->+            |  |   +-----------+
+    ///              |            |  |   |           |
+    ///              +------------+  +-->+ F.Overall |
+    ///                                  | HeatTrans +--+-------------------> HeatOut1    
+    ///              +------------+  +-->+ mission   |  |
+    ///              |            |  |   |           |  |   +----------+
+    /// TempIn2  --->+            |  |   +-----------+  |   |          |
+    ///              | F.Function +--+                  +---+ F.Invert +----> HeatOut2
+    /// HeatIn2  --->+            |                         |          |
+    ///              |            |                         +----------+
+    ///              +------------+   
+    ///              
+    /// </remarks>
     public class SteadyWallModule : BaseModule, IWallModule
     {
         /// <summary>
@@ -103,12 +134,12 @@ namespace LibArchEnvGraph.Modules
             //           = SATo * K / a_i + SATi * (1.0 - K / a_i)
             var Tsi = F.Function(t => SATo.Get(t) * K / a_i + SATi.Get(t) * (1.0 - K / a_i));
 
-            var Q = F.Function(t => -1.0 * (SATo.Get(t) - SATi.Get(t)) * K * S);
+            var Q = F.OverallHeatTransmission(SATo, SATi, K, S);
 
             (TempOut[0] as LinkVariable<double>).Link = Tso;
             (TempOut[1] as LinkVariable<double>).Link = Tsi;
-            (HeatOut[0] as LinkVariable<double>).Link = Q;
-            (HeatOut[1] as LinkVariable<double>).Link = F.Invert(Q);
+            (HeatOut[0] as LinkVariable<double>).Link = F.Invert(Q);
+            (HeatOut[1] as LinkVariable<double>).Link = Q;
         }
     }
 }

@@ -10,6 +10,16 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 対流熱移動モジュール
     /// 
+    ///             +---------------+
+    ///             |               |
+    ///  TempIn1 -->+               +--> HeatOut1
+    ///             |               |
+    ///  TempIn2 -->+  対流熱移動M  +--> HeatOut2
+    ///             |               |
+    ///  alpha_c -->+               |
+    ///             |               |
+    ///             +---------------+
+    ///             
     /// 入力:
     /// - 表面積 S [m2]
     /// - 表面温度 TempIn [K]
@@ -18,8 +28,21 @@ namespace LibArchEnvGraph.Modules
     /// 出力:
     /// - 対流伝熱量 HeatOut [W]
     /// </summary>
+    /// <remarks>
+    /// 
+    ///            +-----------+
+    ///            |           |
+    /// TempIn1 -->+ F.Newton  |
+    ///            |   Cooling +--+------------------> HeatOut2
+    /// TempIn2 -->+           |  |
+    ///            |           |  |   +----------+
+    ///            +-----------+  |   |          |
+    ///                           +---+ F.Invert +---> HeatOut1
+    ///                               |          |
+    ///                               +----------+  
+    /// </remarks>
     /// <seealso cref="NewtonCooling"/>
-    public class ConvectiveHeatTransferModule : BaseModule
+    public class ConvectiveHeatTransferModule : HeatTransferModule
     {
         /// <summary>
         /// 表面積(伝熱面積) [m2]
@@ -27,22 +50,10 @@ namespace LibArchEnvGraph.Modules
         public double S { get; set; }
 
         /// <summary>
-        /// 固体(壁体)/流体(空気)の表面温度 [K]
-        /// </summary>
-        public IVariable<double>[] TempIn { get; set; }
-
-        /// <summary>
         /// 対流熱伝達率 [W/m2K]
         /// </summary>
         public IVariable<double> alpha_c { get; set; }
 
-        /// <summary>
-        /// 固体(壁体)流体(空気)の対流伝熱量 [W]
-        /// </summary>
-        public IVariable<double>[] HeatOut { get; private set; } = new[] {
-            new LinkVariable<double>("固体(壁体)流体(空気)の移動熱量 [W]"),
-            new LinkVariable<double>("固体(壁体)流体(空気)の移動熱量 [W]")
-        };
 
         public override void Init(FunctionFactory F)
         {

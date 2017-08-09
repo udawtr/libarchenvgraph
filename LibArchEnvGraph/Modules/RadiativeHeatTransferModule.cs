@@ -9,6 +9,14 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 放射熱伝達モジュール
     /// 
+    ///             +---------------+
+    ///             |               |
+    ///  TempIn1 -->+               +--> HeatOut1
+    ///             |  放射熱伝達M  |
+    ///  TempIn2 -->+               +--> HeatOut2
+    ///             |               |
+    ///             +---------------+
+    /// 
     /// 入力:
     /// - 灰色体1,2の放射率: e1,e2 [-]
     /// - 灰色体1の面から灰色体2の面への形態係数 F12 [-]
@@ -17,8 +25,22 @@ namespace LibArchEnvGraph.Modules
     /// 出力:
     /// - 灰色体1,2の熱移動量 HeatOut [W]
     /// </summary>
+    /// <remarks>
+    /// 
+    ///            +-----------+
+    ///            |           |
+    /// TempIn1 -->+ F.Stefan  |
+    ///            | Bolzmann  +--+------------------> HeatOut2
+    /// TempIn2 -->+           |  |
+    ///            |           |  |   +----------+
+    ///            +-----------+  |   |          |
+    ///                           +---+ F.Invert +---> HeatOut1
+    ///                               |          |
+    ///                               +----------+  
+    ///                               
+    /// </remarks>
     /// <seealso cref="Functions.StefanBolzmann"/>
-    public class RadiativeHeatTransferModule : BaseModule
+    public class RadiativeHeatTransferModule : HeatTransferModule
     {
         /// <summary>
         /// 灰色体1の放射率 [-]
@@ -34,19 +56,6 @@ namespace LibArchEnvGraph.Modules
         /// 灰色体1の面から灰色体2の面への形態係数 [-]
         /// </summary>
         public double F12 { get; set; } = 0.0;
-
-        /// <summary>
-        /// 灰色体1,2の表面温度 [K]
-        /// </summary>
-        public IVariable<double>[] TempIn { get; set; } = new IVariable<double>[2];
-
-        /// <summary>
-        /// 灰色体1,2の熱移動量 [J/s]
-        /// </summary>
-        public IVariable<double>[] HeatOut { get; private set; } = new[] {
-            new LinkVariable<double>("灰色体1,2の熱移動量 [J/s]"),
-            new LinkVariable<double>("灰色体1,2の熱移動量 [J/s]")
-        };
 
         /// <summary>
         /// 初期化

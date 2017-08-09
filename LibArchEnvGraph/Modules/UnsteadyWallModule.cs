@@ -10,6 +10,18 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 非定常1次元壁体モジュール
     /// 
+    ///               +-------------+
+    ///               |             |
+    ///    HeatIn1 -->+             +--> HeatOut1
+    ///               |  非定常一次 |
+    ///    HeatIn2 -->+  元壁体M    +--> HeatOut2
+    ///               |             |
+    ///    TempIn1 -->+             +--> TempOut1
+    ///               |             |
+    ///    TempIn2 -->+             +--> TempOut2
+    ///               |             |
+    ///               +-------------+
+    /// 
     /// 入力:
     /// - 奥行 depth [m]
     /// - 容積比熱 cro [kJ/m^3・K]
@@ -140,11 +152,11 @@ namespace LibArchEnvGraph.Modules
                     Label = $"層壁体{i+1}<=>{i+2}間の熱伝導 ({Label})"
                 });
 
-                heatCapacityModuleList[i].HeatIn.Add(conductiveModuleList[i].HeatOut1);
-                heatCapacityModuleList[i+1].HeatIn.Add(conductiveModuleList[i].HeatOut2);
+                heatCapacityModuleList[i].HeatIn.Add(conductiveModuleList[i].HeatOut[0]);
+                heatCapacityModuleList[i+1].HeatIn.Add(conductiveModuleList[i].HeatOut[1]);
 
-                conductiveModuleList[i].TempIn1 = heatCapacityModuleList[i].TempOut;
-                conductiveModuleList[i].TempIn2 = heatCapacityModuleList[i + 1].TempOut;
+                conductiveModuleList[i].TempIn[0] = heatCapacityModuleList[i].TempOut;
+                conductiveModuleList[i].TempIn[1] = heatCapacityModuleList[i + 1].TempOut;
             }
 
             //室外側・室内側層壁体への外部からの熱移動

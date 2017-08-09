@@ -9,6 +9,14 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 換気熱移動モジュール
     /// 
+    ///             +-------------+
+    ///             |             |
+    ///  TempIn1 -->+             +--> HeatOut1
+    ///             | 換気熱移動M |
+    ///  TempIn2 -->+             +--> HeatOut2
+    ///             |             |
+    ///             +-------------+
+    /// 
     /// 入力:
     /// - 流体(空気)比熱 c_air [J/kgK]
     /// - 流体(空気)密度 ro_air [kg/m3]
@@ -18,7 +26,20 @@ namespace LibArchEnvGraph.Modules
     /// 出力:
     /// - 固体(壁体)/流体(空気)の移動熱量 HeatOut [W]
     /// </summary>
-    public class VentilationHeatTransferModule : BaseModule
+    /// <remarks>
+    /// 
+    ///            +-----------+
+    ///            |           |
+    /// TempIn1 -->+ F.Ventila |
+    ///            | tionHeatT +--+------------------> HeatOut2
+    /// TempIn2 -->+ ransfer   |  |
+    ///            |           |  |   +----------+
+    ///            +-----------+  |   |          |
+    ///                           +---+ F.Invert +---> HeatOut1
+    ///                               |          |
+    ///                               +----------+  
+    /// </remarks>
+    public class VentilationHeatTransferModule : HeatTransferModule
     {
         /// <summary>
         /// 流体(空気)比熱 [J/kgK]
@@ -31,22 +52,10 @@ namespace LibArchEnvGraph.Modules
         public double ro_air { get; set; } = 1.024;
 
         /// <summary>
-        /// 固体(壁体)/流体(空気)の表面温度 [K]
-        /// </summary>
-        public IVariable<double>[] TempIn { get; set; } = new IVariable<double>[2];
-
-        /// <summary>
         /// 流体(空気)の容積 [m3]
         /// </summary>
         public double V { get; set; }
 
-        /// <summary>
-        /// 固体(壁体)/流体(空気)の移動熱量 [J/s]
-        /// </summary>
-        public IVariable<double>[] HeatOut { get; private set; } = new[] {
-            new LinkVariable<double>("固体(壁体)/流体(空気)の換気熱移動 [J/s]"),
-            new LinkVariable<double>("固体(壁体)/流体(空気)の換気熱移動 [J/s]")
-        };
 
         public override void Init(FunctionFactory F)
         {
