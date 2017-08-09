@@ -10,6 +10,8 @@ namespace LibArchEnvGraph.Functions
     {
         private double[] data;
 
+        public string Label { get; set; }
+
         public double Get(int n)
         {
             return data[n];

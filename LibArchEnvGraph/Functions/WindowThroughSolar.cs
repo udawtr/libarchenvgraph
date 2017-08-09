@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Functions
 {
-    public class WindowThroughSolar : IVariable<double>
+    public class WindowThroughSolar : BaseVariable<double>
     {
         private readonly double Area;
 
@@ -40,7 +40,7 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public double Get(int n)
+        public override double Update(int n)
         {
             var pos = SolarPosition.Get(n);
 

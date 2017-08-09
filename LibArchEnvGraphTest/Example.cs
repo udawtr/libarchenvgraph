@@ -57,11 +57,10 @@ namespace LibArchEnvGraphTest
                 S = 6,
                 T1 = F.Variable(20),
                 T2 = F.Variable(0),
-                dt = 1
             };
             wall.Init(F);
-            Assert.AreEqual(-109.2, wall.HeatOut1.Get(0), 0.1);
-            Assert.AreEqual(109.2, wall.HeatOut2.Get(0), 0.1);
+            Assert.AreEqual(-109.2, wall.HeatOut[0].Get(0), 0.1);
+            Assert.AreEqual(109.2, wall.HeatOut[1].Get(0), 0.1);
         }
 
         [TestMethod]

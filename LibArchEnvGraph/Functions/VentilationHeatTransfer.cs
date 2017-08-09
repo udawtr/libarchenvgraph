@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 換気熱移動
     /// </summary>
-    public class VentilationHeatTransfer : IVariable<double>
+    public class VentilationHeatTransfer : BaseVariable<double>
     {
         /// <summary>
         /// 流体(空気)比熱 [J/kgK]
@@ -36,7 +36,7 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public double V { get; set; }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var dU = c_air * ro_air * V * (Ts.Get(t) - Tf.Get(t));
             return dU;

@@ -9,6 +9,15 @@ namespace LibArchEnvGraph.Modules
 {
     /// <summary>
     /// 透過日射を計算するモジュール
+    /// 
+    /// 入力:
+    /// - 太陽高度と方位角 SolarPosition
+    /// - 日射量 SolarRadiation [W/m2]
+    /// 
+    /// 出力:
+    /// - 傾斜日射 TiltSolarRadiation []
+    /// - 入射角の方向余弦 DirectionCosine [rad]
+    /// - 透過日射熱取得量 HeatOut [W]
     /// </summary>
     public class SolarTransmissionModule : BaseModule
     {

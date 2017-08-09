@@ -10,17 +10,12 @@ namespace LibArchEnvGraph.Functions
     /// 自然対流熱伝達率 [-] を求める
     /// </summary>
     /// <seealso cref="NewtonCooling"/>
-    public class NaturalConvectiveHeatTransferRate : IVariable<double>
+    public class NaturalConvectiveHeatTransferRate : BaseVariable<double>
     {
         /// <summary>
-        /// 固体(壁体)の表面温度 [K]
+        /// 固体(壁体)/流体(空気)の表面温度 [K]
         /// </summary>
-        public IVariable<double> Ts { get; set; }
-
-        /// <summary>
-        /// 流体(空気)の温度 [K]
-        /// </summary>
-        public IVariable<double> Tf { get; set; }
+        public IVariable<double>[] TempIn { get; set; }
 
         /// <summary>
         /// c値(自然対流作用の程度)
@@ -42,9 +37,9 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public const double cValueVerticalWallSurface = 1.98;
 
-        public double Get(int t)
+        public override double Update(int t)
         {
-            var dT = Math.Abs(Ts.Get(t) - Tf.Get(t));
+            var dT = Math.Abs(TempIn[0].Get(t) - TempIn[1].Get(t));
             var alpha_c = cValue * Math.Pow(dT, 0.25);
 
             System.Diagnostics.Debug.Assert(!Double.IsNaN(alpha_c));

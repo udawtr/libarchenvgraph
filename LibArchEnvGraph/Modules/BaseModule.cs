@@ -8,6 +8,8 @@ namespace LibArchEnvGraph.Modules
 {
     public abstract class BaseModule : ICalculationGraph
     {
+        public string Label { get; set; }
+
         public virtual void Commit(int t)
         {
         }

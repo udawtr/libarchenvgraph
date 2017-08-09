@@ -10,19 +10,18 @@ namespace LibArchEnvGraph
     /// <summary>
     /// 変数への参照
     /// </summary>
-    public class LinkVariable<T> : IVariable<T>
+    public class LinkVariable<T> : BaseVariable<T>
     {
         /// <summary>
         /// 参照先変数
         /// </summary>
         public IVariable<T> Link { get; set; }
 
-        public LinkVariable()
+        public LinkVariable(string label = null) : base(label)
         {
-
         }
 
-        public T Get(int t)
+        public override T Update(int t)
         {
             return Link.Get(t);
         }

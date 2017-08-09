@@ -9,8 +9,17 @@ namespace LibArchEnvGraph.Modules
 {
     /// <summary>
     /// 熱容量モジュール
+    /// 
+    /// 入力:
+    /// - 容積 V [m3]
+    /// - 容積比熱 cro [kJ/m3K]
+    /// - 熱流 HeatIn [W]
+    /// - 単位時間 dt [s]
+    /// 
+    /// 出力:
+    /// - 温度 TempOut [K]
     /// </summary>
-    public class HeatCapacityModule : ICalculationGraph
+    public class HeatCapacityModule : BaseModule
     {
         /// <summary>
         /// 容積[m^3]
@@ -22,6 +31,9 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public double cro { get; set; }
 
+        /// <summary>
+        /// 単位時間 [s]
+        /// </summary>
         public double dt { get; set; } = 1.0;
 
         /// <summary>
@@ -36,24 +48,30 @@ namespace LibArchEnvGraph.Modules
 
         private IGateVariable<double> _memT;
 
-        public void Init(FunctionFactory F)
+        public override void Init(FunctionFactory F)
         {
             //熱流を合算し、dtを掛ける
             var _sumQ = F.Multiply(dt, F.Concat(HeatIn));
+            _sumQ.Label = $"入力熱量 [J] ({Label})";
 
             //温度差分 [K]
             var _dT = F.Temperature(cro, V, _sumQ);
+            _dT.Label = $"温度差分 [K] ({Label})";
 
             //記録している温度に温度差分を加える
             var _memTin = new LinkVariable<double>();
+            _memTin.Label = $"記録している温度[K]への参照 ({Label})";
             var _add = F.Add(_memTin, _dT);
+            _add.Label = $"記録している温度[K]に温度差分[K]を加える ({Label})";
 
             //温度を記憶する
             _memT = F.Memory(_add);
             _memTin.Link = _memT;   //加算入力と温度出力を連結
+            _memT.Label = $"記憶している温度[K] ({Label})";
 
             //記録した温度をTempOutに接続する
             (TempOut as LinkVariable<double>).Link = _memT;
+            TempOut.Label = $"温度 [K] ({Label})";
         }
 
         public void SetTemperature(double initialTemp)
@@ -61,7 +79,7 @@ namespace LibArchEnvGraph.Modules
             _memT.Set(initialTemp);
         }
 
-        public void Commit(int t)
+        public override void Commit(int t)
         {
             _memT.Commit(t);
         }

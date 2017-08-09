@@ -9,6 +9,14 @@ namespace LibArchEnvGraph.Modules
 {
     /// <summary>
     /// 対流熱移動モジュール
+    /// 
+    /// 入力:
+    /// - 表面積 S [m2]
+    /// - 表面温度 TempIn [K]
+    /// - 対流熱伝達率 alpha_c [W/m2K]
+    /// 
+    /// 出力:
+    /// - 対流伝熱量 HeatOut [W]
     /// </summary>
     /// <seealso cref="NewtonCooling"/>
     public class ConvectiveHeatTransferModule : BaseModule
@@ -19,36 +27,32 @@ namespace LibArchEnvGraph.Modules
         public double S { get; set; }
 
         /// <summary>
-        /// 固体(壁体)の表面温度 [K]
+        /// 固体(壁体)/流体(空気)の表面温度 [K]
         /// </summary>
-        public IVariable<double> TempSolidIn { get; set; }
+        public IVariable<double>[] TempIn { get; set; }
 
         /// <summary>
-        /// 流体(空気)の温度 [K]
-        /// </summary>
-        public IVariable<double> TempFluidIn { get; set; }
-
-        /// <summary>
-        /// 対流熱伝達率 [-]
+        /// 対流熱伝達率 [W/m2K]
         /// </summary>
         public IVariable<double> alpha_c { get; set; }
 
-
         /// <summary>
-        /// 流体(空気)の移動熱量 [J/s]
+        /// 固体(壁体)流体(空気)の対流伝熱量 [W]
         /// </summary>
-        public IVariable<double> HeatFluidOut { get; private set; } = new LinkVariable<double>();
-
-        /// <summary>
-        /// 固体(壁体)の移動熱量 [J/s]
-        /// </summary>
-        public IVariable<double> HeatSolidOut { get; private set; } = new LinkVariable<double>();
+        public IVariable<double>[] HeatOut { get; private set; } = new[] {
+            new LinkVariable<double>("固体(壁体)流体(空気)の移動熱量 [W]"),
+            new LinkVariable<double>("固体(壁体)流体(空気)の移動熱量 [W]")
+        };
 
         public override void Init(FunctionFactory F)
         {
-            var newtonCooling = F.NewtonCooling(S, TempSolidIn, TempFluidIn, alpha_c);
-            (HeatSolidOut as LinkVariable<double>).Link = new Invert(newtonCooling);
-            (HeatFluidOut as LinkVariable<double>).Link = newtonCooling;
+            var newtonCooling = F.NewtonCooling(S, TempIn[0], TempIn[1], alpha_c);
+            (HeatOut[0] as LinkVariable<double>).Link = new Invert(newtonCooling);
+            (HeatOut[1] as LinkVariable<double>).Link = newtonCooling;
+
+            newtonCooling.Label = $"対流熱伝達量 ({TempIn[0].Label}-{TempIn[1].Label})";
+            HeatOut[0].Label = $"対流熱伝達量 ({TempIn[0].Label}-{TempIn[1].Label})";
+            HeatOut[1].Label = $"対流熱伝達量 ({TempIn[0].Label}-{TempIn[1].Label})";
         }
     }
 }

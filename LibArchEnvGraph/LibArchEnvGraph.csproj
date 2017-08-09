@@ -50,6 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRoomModule.cs" />
+    <Compile Include="IWallModule.cs" />
+    <Compile Include="Modules\SteadyWallModule.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="Functions\Concat.cs" />
     <Compile Include="Functions\Memory.cs" />
@@ -65,7 +68,7 @@
     <Compile Include="Modules\NaturalConvectiveHeatTransferModule.cs" />
     <Compile Include="Modules\SolarTransmissionModule.cs" />
     <Compile Include="Modules\RadiativeHeatTransferModule.cs" />
-    <Compile Include="Modules\SerialHeatConductionModule.cs" />
+    <Compile Include="Modules\UnsteadyWallModule.cs" />
     <Compile Include="Modules\VentilationHeatTransferModule.cs" />
     <Compile Include="FunctionFactory.cs" />
     <Compile Include="Functions\AbsorptionSolarRadiationSplitter.cs" />

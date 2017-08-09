@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph
 {
-    public class DataVariable<T> : IVariable<T>
+    public class DataVariable<T> : BaseVariable<T>
     {
         private T[] data;
 
@@ -15,7 +15,7 @@ namespace LibArchEnvGraph
             this.data = data.ToArray();
         }
 
-        public T Get(int t)
+        public override T Get(int t)
         {
             return data[t];
         }

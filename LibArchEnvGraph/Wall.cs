@@ -12,6 +12,29 @@ namespace LibArchEnvGraph
     /// </summary>
     public class Wall
     {
+        public string Name { get; set; }
+
+        #region 定常計算用プロパティ
+
+        /// <summary>
+        /// 熱伝導抵抗 [m2K/W]
+        /// </summary>
+        public double r { get; set; }
+
+        /// <summary>
+        /// 室外側熱伝達率 [W/m2K]
+        /// </summary>
+        public double a1 { get; set; } = 23;
+
+        /// <summary>
+        /// 室内側熱伝達率 [W/m2K]
+        /// </summary>
+        public double a2 { get; set; } = 9;
+
+        #endregion
+
+        #region 非定常計算用プロパティ
+
         /// <summary>
         /// 熱伝導率 [W/mK]
         /// </summary>
@@ -31,6 +54,8 @@ namespace LibArchEnvGraph
         /// 面積 [m2]
         /// </summary>
         public double S { get; set; }
+
+        #endregion
 
         public bool IsFloor { get; set; }
 

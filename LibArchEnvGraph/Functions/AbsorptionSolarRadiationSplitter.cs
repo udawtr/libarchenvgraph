@@ -15,7 +15,7 @@ namespace LibArchEnvGraph.Functions
     /// 2. 床とそれ以外でそれぞれ面積に応じて配分します。
     /// ただし、床が存在しない場合は床以外ですべて配分します。
     /// </remarks>
-    public class AbsorptionSolarRadiationSplitter : IVariable<double>
+    public class AbsorptionSolarRadiationSplitter : BaseVariable<double>
     {
         /// <summary>
         /// 透過日射熱 [W]
@@ -66,7 +66,7 @@ namespace LibArchEnvGraph.Functions
             Inited_Sol = true;
         }
 
-        public double Get(int index)
+        public override double Update(int index)
         {
             return GetAbsorbingSolarRadiationTo(index);
 

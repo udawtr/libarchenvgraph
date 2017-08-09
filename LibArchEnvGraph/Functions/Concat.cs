@@ -9,20 +9,21 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 多変数加算
     /// </summary>
-    public class Concat : IVariable<double>
+    public class Concat : BaseVariable<double>
     {
         private IVariable<double>[] var_in;
 
         public Concat(params IVariable<double>[] var_in)
         {
             this.var_in = var_in;
+            this.Label = "多変数加算";
         }
         public Concat(IEnumerable<IVariable<double>> var_in)
         {
             this.var_in = var_in.ToArray();
         }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var sum = 0.0;
             foreach (var v in var_in)

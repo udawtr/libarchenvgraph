@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 減算
     /// </summary>
-    public class Subtract : IVariable<double>
+    public class Subtract : BaseVariable<double>
     {
         private IVariable<double> var_A;
         private IVariable<double> var_B;
@@ -20,7 +20,7 @@ namespace LibArchEnvGraph.Functions
             this.var_B = var_B;
         }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             return var_A.Get(t) - var_B.Get(t);
         }

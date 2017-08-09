@@ -8,6 +8,8 @@ namespace LibArchEnvGraph
 {
     public interface ICalculationGraph
     {
+        string Label { get; set; }
+
         void Init(FunctionFactory F);
 
         void Commit(int t);

@@ -9,10 +9,11 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 乗算
     /// </summary>
-    public class Multiply : IVariable<double>
+    public class Multiply : BaseVariable<double>
     {
         private IVariable<double> var_A;
         private IVariable<double> var_B;
+
 
         public Multiply(IVariable<double> var_A, IVariable<double> var_B)
         {
@@ -20,7 +21,7 @@ namespace LibArchEnvGraph.Functions
             this.var_B = var_B;
         }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var A = var_A.Get(t);
             var B = var_B.Get(t);

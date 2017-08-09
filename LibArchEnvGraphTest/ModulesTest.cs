@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using LibArchEnvGraph.Modules;
 using LibArchEnvGraph;
@@ -65,15 +66,18 @@ namespace LibArchEnvGraphTest
             {
                 alpha_c = F.Variable(2),
                 S = 2.0,    //2.0m2
-                TempFluidIn = F.Function(t => 10),
-                TempSolidIn = F.Function(t => 0),
+                TempIn = new[]
+                {
+                    F.Function(t => 0),
+                    F.Function(t => 10),
+                }
             };
 
             target.Init(F);
 
             //熱移動量の取得
-            var q_f_to_s = target.HeatSolidOut.Get(0);
-            var q_s_to_f = target.HeatFluidOut.Get(0);
+            var q_f_to_s = target.HeatOut[0].Get(0);
+            var q_s_to_f = target.HeatOut[1].Get(0);
 
             //外気から壁への熱流は40W
             // 2.0 * 2.0 * (10 - 0) = 40 W
@@ -93,15 +97,18 @@ namespace LibArchEnvGraphTest
             {
                 cValue = 1.5,
                 S = 2.0,    //2.0m2
-                TempFluidIn = F.Function(t => 10),
-                TempSolidIn = F.Function(t => 0),
+                TempIn = new IVariable<double>[]
+                {
+                    F.Function(t => 0),
+                    F.Function(t => 10),
+                }
             };
 
             target.Init(F);
 
             //熱流の取得
-            var q_f_to_s = target.HeatSolidOut.Get(0);
-            var q_s_to_f = target.HeatFluidOut.Get(0);
+            var q_f_to_s = target.HeatOut[0].Get(0);
+            var q_s_to_f = target.HeatOut[1].Get(0);
 
             //外気から壁への熱流は40W
             // a = 1.5 * (10 - 0) ^ 0.25 = 2.667419
@@ -129,11 +136,13 @@ namespace LibArchEnvGraphTest
             {
                 cValue = 1.5,
                 S = 2.0,    //2.0m2
-                TempFluidIn = F.Function(t => 15),
+                TempIn = new IVariable<double>[] {
+                    wall.TempOut,
+                    F.Function(t => 15),
+                }
             };
 
-            wind.TempSolidIn = wall.TempOut;
-            wall.HeatIn.Add(wind.HeatSolidOut);
+            wall.HeatIn.Add(wind.HeatOut[0]);
 
             wall.Init(F);
             wind.Init(F);
@@ -152,54 +161,11 @@ namespace LibArchEnvGraphTest
         }
 
         [TestMethod]
-        public void NaturalConvectiveHeatTransferModuleTest3()
+        public void UnsteadyWall1DModuleTest()
         {
             var F = new FunctionFactory();
 
-            var wall = new SerialHeatConductionModule
-            {
-                cro = 1000,
-                S = 2.0,
-                depth = 0.05,
-                n_slice = 5,
-                Rambda = 0.2,
-                dt = 1,
-            };
-
-            var wind = new NaturalConvectiveHeatTransferModule
-            {
-                cValue = 1.5,
-                S = 2.0,    //2.0m2
-                TempFluidIn = F.Function(t => 15),
-            };
-
-            wind.TempSolidIn = wall.TempOut1;
-            wall.HeatIn1.Add(wind.HeatSolidOut);
-
-            wall.Init(F);
-            wind.Init(F);
-
-            var results = new double[2, 100*3600];
-            for (int i = 0; i < 100 * 3600; i++)
-            {
-                wall.Commit(i);
-                wind.Commit(i);
-
-                results[0, i] = wall.TempOut1.Get(i);
-                results[1, i] = wall.TempOut2.Get(i);
-            }
-
-            //最終的には 15[K] に収束するはず。
-            Assert.AreEqual(15.0, results[0, 359999], 0.1);
-            Assert.AreEqual(15.0, results[1, 359999], 0.1);
-        }
-
-        [TestMethod]
-        public void SerialHeatCapacityModuleTest()
-        {
-            var F = new FunctionFactory();
-
-            var target = new SerialHeatConductionModule
+            var target = new UnsteadyWallModule
             {
                 cro = 1000.0,
                 S = 2.0,    //2m2
@@ -209,11 +175,18 @@ namespace LibArchEnvGraphTest
                 dt = 1,    //10秒
             };
 
+            //壁体表面温度と流体温度を同じにする
+            //※F.Memoryを挟まないと自己循環参照に陥るので注意
+            target.TempIn = new [] {
+                F.Memory(target.TempOut[0]),
+                F.Memory(target.TempOut[1]),
+            };
+
             //1000秒間だけ 1000J/s = 1000W I面加熱する
-            target.HeatIn1.Add(new Variable<double>(t => t < 1000 ? 1000 : 0));
+            target.HeatIn[0].Add(new Variable<double>(t => t < 1000 ? 1000 : 0));
 
             //1000秒間だけ 500J/s = 500W II面加熱する
-            target.HeatIn2.Add(new Variable<double>(t => t < 1000 ? 500 : 0));
+            target.HeatIn[1].Add(new Variable<double>(t => t < 1000 ? 500 : 0));
 
             target.Init(F);
 
@@ -221,8 +194,13 @@ namespace LibArchEnvGraphTest
             for (int i = 0; i < 10000; i++)
             {
                 target.Commit(i);
-                results[0,i] = target.TempOut1.Get(i);
-                results[1,i] = target.TempOut2.Get(i);
+                foreach(var mem in target.TempIn.OfType<Memory>())
+                {
+                    mem.Commit(i);
+                }
+
+                results[0,i] = target.TempOut[0].Get(i);
+                results[1,i] = target.TempOut[1].Get(i);
             }
 
             //最終的には 15[K] に収束するはず。

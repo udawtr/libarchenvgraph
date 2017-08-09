@@ -34,11 +34,13 @@ namespace Sample1
             {
                 cValue = NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
                 S = 6.0,
-                TempSolidIn = wall.TempOut,
-                TempFluidIn = air.TempOut
+                TempIn = new IVariable<double>[] {
+                    wall.TempOut,
+                    air.TempOut
+                }
             };
-            wall.HeatIn.Add(nv.HeatSolidOut);
-            air.HeatIn.Add(nv.HeatFluidOut);
+            wall.HeatIn.Add(nv.HeatOut[0]);
+            air.HeatIn.Add(nv.HeatOut[1]);
 
 
             //初期化
@@ -54,7 +56,7 @@ namespace Sample1
             {
                 container.Commit(t);
 
-                Console.WriteLine($"{wall.TempOut.Get(t)}, {air.TempOut.Get(t)}, {nv.HeatSolidOut.Get(t)}, {nv.HeatFluidOut.Get(t)}");
+                Console.WriteLine($"{wall.TempOut.Get(t)}, {air.TempOut.Get(t)}, {nv.HeatOut[0].Get(t)}, {nv.HeatOut[1].Get(t)}");
             }
         }
     }

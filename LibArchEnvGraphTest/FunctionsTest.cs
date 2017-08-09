@@ -100,7 +100,6 @@ namespace LibArchEnvGraphTest
             target.S = 10.0;
             target.T1 = new Variable<double>(20.0);
             target.T2 = new Variable<double>(10.0);
-            target.dt = 1.0;
 
             var dU = -1.0 * 0.1 * 10.0 * (20.0 - 10.0) / 0.2;
 

@@ -166,7 +166,7 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 熱伝導による熱移動の計算 (フーリエの法則)
         /// </summary>
-        public virtual IVariable<double> Fourier(double dx, double rambda, double S, IVariable<double> T1, IVariable<double> T2, double dt  = 1.0)
+        public virtual IVariable<double> Fourier(double dx, double rambda, double S, IVariable<double> T1, IVariable<double> T2)
         {
             return new Functions.Fourier
             {
@@ -175,7 +175,6 @@ namespace LibArchEnvGraph
                 S = S,
                 T1 = T1,
                 T2 = T2,
-                dt = dt
             };
         }
 
@@ -183,9 +182,9 @@ namespace LibArchEnvGraph
         /// 貫流熱の計算(定常熱計算)
         /// </summary>
         /// <returns>面積Sの貫流熱量[]</returns>
-        public virtual IVariable<double> HeatTransmission(IVariable<double> T1, IVariable<double> T2, double K, double S, double dt = 1.0)
+        public virtual IVariable<double> HeatTransmission(IVariable<double> T1, IVariable<double> T2, double K, double S)
         {
-            return new Variable<double>(t => K * S * (T1.Get(t) - T2.Get(t)) * dt);
+            return new Variable<double>(t => K * S * (T1.Get(t) - T2.Get(t)));
         }
 
         /// <summary>

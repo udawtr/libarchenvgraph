@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// ニュートンの冷却測
     /// </summary>
-    public class NewtonCooling : IVariable<double>
+    public class NewtonCooling : BaseVariable<double>
     {
         /// <summary>
         /// 表面積(伝熱面積) [m2]
@@ -32,14 +32,14 @@ namespace LibArchEnvGraph.Functions
         /// <seealso cref="NaturalConvectiveHeatTransferRate"/>
         public IVariable<double> alpha_c { get; set; }
 
-        public double Get(int t)
+        public override double Get(int t)
         {
             var dT = Ts.Get(t) - Tf.Get(t);
             var dU = alpha_c.Get(t) * dT * S;
 
             System.Diagnostics.Debug.Assert(!Double.IsNaN(dU));
 
-            System.Diagnostics.Debug.WriteLine($"{dU} [W]");
+            System.Diagnostics.Debug.WriteLine($"[{t}] NewtonCooling: {Ts.Label}:{Ts.Get(t)} -> {Tf.Label}:{Tf.Get(t)} = {dU}");
 
             return dU;
         }

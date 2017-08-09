@@ -15,6 +15,8 @@ namespace LibArchEnvGraph.Functions
 
         private int last_t = int.MinValue;
 
+        public string Label { get; set; }
+
         /// <summary>
         /// Commit実行時に保持する値
         /// </summary>

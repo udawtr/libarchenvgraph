@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// シュテファン-ボルツマンの法則
     /// </summary>
-    public class StefanBolzmann : IVariable<double>
+    public class StefanBolzmann : BaseVariable<double>
     {
         /// <summary>
         /// 灰色体1の放射率 [-]
@@ -38,7 +38,7 @@ namespace LibArchEnvGraph.Functions
         public IVariable<double> T2 { get; set; }
 
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var dU = F12 * e1 * e2 * 5.67 * (Math.Pow(T1.Get(t) / 100, 4.0) - Math.Pow(T2.Get(t) / 100, 4.0));
 

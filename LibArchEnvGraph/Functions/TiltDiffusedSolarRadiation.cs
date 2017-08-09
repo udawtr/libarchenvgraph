@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Functions
 {
-    public class TiltDiffusedSolarRadiation : IVariable<double>
+    public class TiltDiffusedSolarRadiation : BaseVariable<double>
     {
         const double toRad = Math.PI / 180.0;
 
@@ -31,7 +31,7 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public IVariable<double> DiffusedSolarRadiation { get; set; }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             return GetSkySolarRadiation(t) + GetGroundReflectedSolarRadiation(t);
         }

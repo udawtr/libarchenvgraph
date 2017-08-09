@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph
 {
-    public class Variable<T> : IVariable<T>
+    public class Variable<T> : BaseVariable<T>
     {
         private Func<int, T> func;
 
@@ -20,7 +20,7 @@ namespace LibArchEnvGraph
             this.func = (t) => constValue;
         }
 
-        public T Get(int t)
+        public override T Update(int t)
         {
             return func(t);
         }

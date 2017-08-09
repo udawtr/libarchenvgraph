@@ -23,6 +23,8 @@ namespace LibArchEnvGraph.Functions
 
         private SolarPositionData[] data;
 
+        public string Label { get; set; }
+
         public ISolarPositionData Get(int index)
         {
             return data[index];
@@ -33,6 +35,8 @@ namespace LibArchEnvGraph.Functions
             this.Lat = Lat;
             this.L = L;
             Init(tickTime, beginDay, days);
+
+            this.Label = $"太陽位置 緯度:{Lat},経度:{L}";
         }
 
         public void Init(int tickTime, int beginDay, int days)

@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 入射角の方向余弦
     /// </summary>
-    public class IncidentAngleCosine : IVariable<double>
+    public class IncidentAngleCosine : BaseVariable<double>
     {
         // 度 [°] をラジアン [rad] に変換する
         const double toRad = Math.PI / 180.0;
@@ -30,7 +30,7 @@ namespace LibArchEnvGraph.Functions
             this.solpossrc = solarPosition;
         }
 
-        public double Get(int n)
+        public override double Update(int n)
         {
             var Ww = Math.Sin(tiltAngle * toRad) * Math.Sin(azimuthAngle * toRad);
             var Ws = Math.Sin(tiltAngle * toRad) * Math.Cos(azimuthAngle * toRad);

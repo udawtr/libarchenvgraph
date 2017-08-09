@@ -9,6 +9,14 @@ namespace LibArchEnvGraph.Modules
 
     /// <summary>
     /// 熱貫流モジュール
+    /// 
+    /// 入力:
+    /// - 表面温度 T1,T2 [K]
+    /// - 熱貫流率 K [W/m2K]
+    /// - 面積 S [m2]
+    /// 
+    /// 出力:
+    /// - 貫流熱量 HeatOut [W]
     /// </summary>
     public class HeatTransmissionModule : BaseModule
     {
@@ -27,26 +35,19 @@ namespace LibArchEnvGraph.Modules
         public double S { get; set; }
 
         /// <summary>
-        /// 単位時間 [s]
+        /// 貫流熱量 [W]
         /// </summary>
-        public double dt { get; set; } = 1.0;
-
-        /// <summary>
-        /// 貫流熱量 [J]
-        /// </summary>
-        public IVariable<double> HeatOut1 { get; private set; } = new LinkVariable<double>();
-
-        /// <summary>
-        /// 貫流熱量 [J]
-        /// </summary>
-        public IVariable<double> HeatOut2 { get; private set; } = new LinkVariable<double>();
+        public IVariable<double>[] HeatOut { get; private set; } = new[] {
+            new LinkVariable<double>("貫流熱量 [W]"),
+            new LinkVariable<double>("貫流熱量 [W]")
+        };
 
         public override void Init(FunctionFactory F)
         {
-            var q = F.HeatTransmission(T1, T2, K, S, dt);
+            var q = F.HeatTransmission(T1, T2, K, S);
 
-            (HeatOut1 as LinkVariable<double>).Link = F.Invert(q);
-            (HeatOut2 as LinkVariable<double>).Link = q;
+            (HeatOut[0] as LinkVariable<double>).Link = F.Invert(q);
+            (HeatOut[1] as LinkVariable<double>).Link = q;
         }
     }
 }

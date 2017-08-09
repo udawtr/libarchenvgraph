@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 熱量から温度 [K] への変換
     /// </summary>
-    public class HeatToTemp : IVariable<double>
+    public class HeatToTemp : BaseVariable<double>
     {
         /// <summary>
         /// 容積 [m3]
@@ -26,7 +26,7 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public IVariable<double> Heat { private get; set; }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var C = cro * 1000 * V;
             var T = Heat.Get(t) / C;

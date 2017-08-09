@@ -13,6 +13,11 @@ namespace LibArchEnvGraph
     public class Room
     {
         /// <summary>
+        /// 室名
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// 容積比熱 cρ [kJ/m^3・K]
         /// </summary>
         public double cro { get; set; }

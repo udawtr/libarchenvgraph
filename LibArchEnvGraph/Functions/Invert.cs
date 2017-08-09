@@ -9,16 +9,16 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// 符号逆転
     /// </summary>
-    public class Invert : IVariable<double>
+    public class Invert : BaseVariable<double>
     {
         private IVariable<double> var_in;
 
-        public Invert(IVariable<double> var_in)
+        public Invert(IVariable<double> var_in, string label = null) : base(label)
         {
             this.var_in = var_in;
         }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             var v = var_in.Get(t);
 

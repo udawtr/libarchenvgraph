@@ -9,7 +9,7 @@ namespace LibArchEnvGraph.Functions
     /// <summary>
     /// フーリエの熱伝導式
     /// </summary>
-    public class Fourier : IVariable<double>
+    public class Fourier : BaseVariable<double>
     {
         /// <summary>
         /// 熱伝導率 [W/mK]
@@ -28,11 +28,6 @@ namespace LibArchEnvGraph.Functions
         public double S { get; set; }
 
         /// <summary>
-        /// 単位時間 [s]
-        /// </summary>
-        public double dt { get; set; } = 1.0;
-
-        /// <summary>
         /// 温度1 [K]
         /// </summary>
         public IVariable<double> T1 { get; set; }
@@ -42,11 +37,14 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         public IVariable<double> T2 { get; set; }
 
-        public double Get(int t)
+        public override double Update(int t)
         {
             System.Diagnostics.Debug.Assert(dx > 0);
 
-            var dU = -1.0 * dt * Rambda * S * (T1.Get(t) - T2.Get(t)) / dx;
+            var dU = -1.0 * Rambda * S * (T1.Get(t) - T2.Get(t)) / dx;
+
+            System.Diagnostics.Debug.WriteLine($"[{t}] Fourier: {T1.Label}:{T1.Get(t)} -> {T2.Label}:{T2.Get(t)} = {dU} [W]");
+
             return dU;
         }
     }

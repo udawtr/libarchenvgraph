@@ -9,6 +9,17 @@ namespace LibArchEnvGraph.Modules
 {
     /// <summary>
     /// 傾斜面日射量
+    /// 
+    /// 入力:
+    /// - 天空に対する形態係数 ShapeFactorToSky [-]
+    /// - 地面日射反射率 GroundReturnRate [-]
+    /// - 直達日射量 DirectSolarRadiation [W/m2]
+    /// - 拡散日射量 DiffusedSolarRadiation [W/m2]
+    /// 
+    /// 出力:
+    /// - 傾斜面直達日射量 DirectOut [W/m2]
+    /// - 傾斜面拡散日射量 DiffusedOut [W/m2]
+    /// - 傾斜面全天日射量 AllOut [W/m2]
     /// </summary>
     public class SolarRadiationTilterModule : BaseModule
     {
@@ -28,17 +39,17 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 傾斜面直達日射量 ID
         /// </summary>
-        public LinkVariable<double> DirectOut { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> DirectOut { get; private set; } = new LinkVariable<double>("傾斜面直達日射量 ID");
 
         /// <summary>
         /// 傾斜面拡散日射量 Id
         /// </summary>
-        public LinkVariable<double> DiffusedOut { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> DiffusedOut { get; private set; } = new LinkVariable<double>("傾斜面拡散日射量 Id");
 
         /// <summary>
         /// 傾斜面全天日射量 Iw
         /// </summary>
-        public LinkVariable<double> AllOut { get; private set; } = new LinkVariable<double>();
+        public LinkVariable<double> AllOut { get; private set; } = new LinkVariable<double>("傾斜面全天日射量 Iw");
 
         private bool Inited = false;
 

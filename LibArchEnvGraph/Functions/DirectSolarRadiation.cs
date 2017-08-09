@@ -13,6 +13,8 @@ namespace LibArchEnvGraph.Functions
         /// </summary>
         private IVariable<double> solarRadiation;
 
+        public string Label { get; set; }
+
         private IVariable<ISolarPositionData> solarPosition;
 
         private int tickTime;
