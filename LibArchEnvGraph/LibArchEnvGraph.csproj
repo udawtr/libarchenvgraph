@@ -53,6 +53,7 @@
     <Compile Include="Functions\OverallHeatTransmission.cs" />
     <Compile Include="IRoomModule.cs" />
     <Compile Include="IWallModule.cs" />
+    <Compile Include="Modules\CalendarModule.cs" />
     <Compile Include="Modules\HeatTransferModule.cs" />
     <Compile Include="Modules\SolarAirTemperatureModule.cs" />
     <Compile Include="Modules\SteadyWallModule.cs" />

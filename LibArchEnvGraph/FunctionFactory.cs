@@ -252,9 +252,14 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 直散分離(全天日射から直達日射を分離)
         /// </summary>
-        public virtual IVariable<double> DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<double> solH)
+        public virtual IVariable<double> DirectSolarRadiation(IVariable<int> dayOfYear, IVariable<double> sol, IVariable<double> solH)
         {
-            return new Functions.DirectSolarRadiation(tickTime, beginDay, days, solarRadiation, solH);
+            return new Functions.DirectSolarRadiation
+            {
+                DayOfYearIn = dayOfYear,
+                SolH = solH,
+                SolIn = sol
+            };
         }
 
         /// <summary>

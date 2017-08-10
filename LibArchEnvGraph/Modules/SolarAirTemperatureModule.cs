@@ -70,6 +70,11 @@ namespace LibArchEnvGraph.Modules
         public IVariable<double> TempIn { get; set; }
 
         /// <summary>
+        /// 年間積算日(1-366)
+        /// </summary>
+        public IVariable<int> DayOfYearIn { get; set; }
+
+        /// <summary>
         /// 傾斜日射 [W/m2]
         /// </summary>
         public IVariable<double> SolTiltOut { get; private set; } = new LinkVariable<double>();
@@ -84,21 +89,20 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public IVariable<double> TempOut { get; private set; } = new LinkVariable<double>();
 
-        public int TickSecond, BeginDay, TotalDays;
-
 
         public override void Init(FunctionFactory F)
         {
-            if (SolHIn == null) throw new InvalidOperationException("太陽高度角を設定してから初期化してください。");
-            if (SolAIn == null) throw new InvalidOperationException("太陽方位角を設定してから初期化してください。");
-            if (SolIn == null) throw new InvalidOperationException("日射量を設定してから初期化してください。");
-            if (TempIn == null) throw new InvalidOperationException("外気温を設定してから初期化してください。");
+            if (SolHIn == null) throw new InvalidOperationException("太陽高度角を設定してください。");
+            if (SolAIn == null) throw new InvalidOperationException("太陽方位角を設定してください。");
+            if (SolIn == null) throw new InvalidOperationException("日射量を設定してください。");
+            if (TempIn == null) throw new InvalidOperationException("外気温を設定してください。");
+            if (DayOfYearIn == null) throw new InvalidOperationException("年間積算日を設定してください。");
 
             //入射角の方向余弦
             var tiltCos = F.IncidentAngleCosine(TiltAngle, AzimuthAngle, SolHIn, SolAIn);
 
             //直散分離
-            var solDirect = F.DirectSolarRadiation(TickSecond, BeginDay, TotalDays, SolIn, SolHIn);
+            var solDirect = F.DirectSolarRadiation(DayOfYearIn, SolIn, SolHIn);
             var solDiffuse = F.Subtract(SolIn, solDirect);
 
             //傾斜面直達日射量

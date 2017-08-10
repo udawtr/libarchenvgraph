@@ -14,9 +14,9 @@ namespace LibArchEnvGraph.Modules
     /// 
     ///              +-----------+
     ///              |           |
-    ///    SolAIn -->+           |
+    ///    SolHIn -->+           |
     ///              |           |
-    ///    SolHIn -->+           +--> HeatOut
+    ///    SolAIn -->+ 透過日射M +--> HeatOut
     ///              |           |
     ///     SolIn -->+           |
     ///              |           |
@@ -71,9 +71,7 @@ namespace LibArchEnvGraph.Modules
             IVariable<double> sol,
             IVariable<double> solH,
             IVariable<double> solA,
-            int tickTime,
-            int beginDay,
-            int days
+            IVariable<int> dayOfYear
             )
         {
             // 度 [°] をラジアン [rad] に変換する
@@ -92,7 +90,7 @@ namespace LibArchEnvGraph.Modules
             var tiltCos = F.IncidentAngleCosine(tiltAngle, azimuthAngle, solH, solA);
 
             //直散分離
-            var solDirect = F.DirectSolarRadiation(tickTime, beginDay, days, sol, solH);
+            var solDirect = F.DirectSolarRadiation(dayOfYear, sol, solH);
             var solDiffuse = F.Subtract(sol, solDirect);
 
             //傾斜面直達日射量

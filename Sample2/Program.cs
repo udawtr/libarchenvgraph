@@ -35,7 +35,7 @@ namespace Sample2
             //シミュレータ
             var sim = new Simulator
             {
-                TickSecond = 100,
+                TickSecond = 60,
                 BeginDay = 0,
                 TotalDays = 1,
 

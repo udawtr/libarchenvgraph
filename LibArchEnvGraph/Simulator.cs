@@ -211,9 +211,29 @@ namespace LibArchEnvGraph
             }
 
 
+            //暦
+            var calM = new CalendarModule
+            {
+                BeginDay= BeginDay,
+                TotalDays = TotalDays,
+                TickSecond = TickSecond
+            };
+            container.Modules.Add(calM);
+
             //太陽位置
-            var sol_pos = new SolarPositionModule(Lat, L, TickSecond, BeginDay, TotalDays);
-            sol_pos.Init(TickSecond, BeginDay, TotalDays);
+            var solPosM = new SolarPositionModule
+            {
+                //緯度経度
+                Lat = Lat,
+                L = L,
+
+                //暦
+                DayOfYearIn = calM.DayOfYearOut,
+                HourIn = calM.HourOut,
+                MinuteIn = calM.MinuteOut,
+                SecondIn = calM.SecondOut,
+            };
+            container.Modules.Add(solPosM);
 
             foreach (var room in House.Rooms)
             {
@@ -237,12 +257,10 @@ namespace LibArchEnvGraph
                             azimuthAngle: win.AzimuthAngle,
                             groundReturnRate: win.GroundReturnRate,
                             solarThroughRate: win.SolarThroughRate,
-                            solH: sol_pos.SolHOut,
-                            solA: sol_pos.SolAOut,
+                            solH: solPosM.SolHOut,
+                            solA: solPosM.SolAOut,
                             sol: solarRadiation,
-                            tickTime: TickSecond,
-                            beginDay: BeginDay,
-                            days: TotalDays
+                            dayOfYear: calM.DayOfYearOut
                         );
 
                         QGT.Add(sol_tr.HeatOut);
@@ -339,13 +357,11 @@ namespace LibArchEnvGraph
                     TiltAngle = wall.TiltAngle,
                     AzimuthAngle = wall.AzimuthAngle,
                     GroundReturnRate = wall.GroundReturnRate,
-                    SolHIn = sol_pos.SolHOut,
-                    SolAIn = sol_pos.SolAOut,
+                    SolHIn = solPosM.SolHOut,
+                    SolAIn = solPosM.SolAOut,
                     SolIn = solarRadiation,
                     TempIn = outsideTemperature,
-                    TickSecond = TickSecond,
-                    BeginDay = BeginDay,
-                    TotalDays = TotalDays,
+                    DayOfYearIn = calM.DayOfYearOut,
                 };
                 container.Modules.Add(SATM);
 

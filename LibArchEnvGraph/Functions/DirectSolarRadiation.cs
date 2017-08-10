@@ -7,73 +7,41 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Functions
 {
     /// <summary>
-    /// 直達日射量 [W/m2]
+    /// 直散分離をして直達日射[W/m2]のみを出力します。
     /// 
-    ///           +----------+
-    ///           |          |
-    ///  SolIn -->+          |         
-    ///           |          +--> SolDirect
-    /// SolPos -->+          |
-    ///           |          |
-    ///           +----------+
+    ///                +-----------+
+    ///                |           |
+    ///       SolIn -->+           |         
+    ///                |           |
+    ///        SolH -->+ 直散分離F +--> SolDirectOut
+    ///                |           |
+    /// DayOfYearIn -->+           |
+    ///                |           |
+    ///                +-----------+
     /// </summary>
-    public class DirectSolarRadiation : IVariable<double>
+    public class DirectSolarRadiation : BaseVariable<double>
     {
         /// <summary>
-        /// 日射量 [MJ/m2]
+        /// 日射量 [W/m2]
         /// </summary>
-        private IVariable<double> SolIn;
-
-        public string Label { get; set; }
+        public IVariable<double> SolIn { get; set; }
 
         /// <summary>
         /// 太陽高度角[deg]
         /// </summary>
-        private IVariable<double> SolH;
-
-        private int tickTime;
-
-        private int beginDay;
-
-        private int days;
-
-        private double[] data;
-
-        public double Get(int index)
-        {
-            return data[index];
-        }
-
-        public DirectSolarRadiation(int tickTime, int beginDay, int days, IVariable<double> solarRadiation, IVariable<double> solH)
-        {
-            this.SolIn = solarRadiation;
-            this.SolH = solH;
-            this.tickTime = tickTime;
-            this.beginDay = beginDay;
-            this.days = days;
-            Init();
-        }
+        public IVariable<double> SolH { get; set; }
 
         /// <summary>
-        public void Init()
+        /// 年間積算日(1-366)
+        /// </summary>
+
+        public IVariable<int> DayOfYearIn { get; set; }
+
+
+        public override double Update(int t)
         {
-            data = new double[(int)(3600 / tickTime) * 24 * days];
-
-            // デルタt
-            double dt = tickTime;
-
-            int off = 0;
-            for (int d = 0; d < days; d++)
-            {
-                for (int i = 0; i < 24; i++)
-                {
-                    for (int j = 0; j < (int)(3600 / dt); j++, off++)
-                    {
-                        var H = SolIn.Get(off);
-                        data[off] = GetHd(H, beginDay + d, off);
-                    }
-                }
-            }
+            var H = SolIn.Get(t);
+            return GetHd(H, DayOfYearIn.Get(t), t);
         }
 
         private double GetH0(int d, int t)
