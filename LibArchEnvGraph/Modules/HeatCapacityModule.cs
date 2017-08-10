@@ -64,6 +64,12 @@ namespace LibArchEnvGraph.Modules
 
         private IGateVariable<double> _memT;
 
+
+        public HeatCapacityModule()
+        {
+            Label = "熱容量M";
+        }
+
         public override void Init(FunctionFactory F)
         {
             //熱流を合算し、dtを掛ける

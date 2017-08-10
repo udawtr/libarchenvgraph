@@ -90,6 +90,16 @@ namespace LibArchEnvGraph
 
             G.Init(F);
 
+            //モジュール階層構造確認
+            GraphAnalyzer.TraceNestedModule(G as Modules.ContainerModule);
+
+            //相互参照確認
+            var allModules = GraphAnalyzer.GetAllModules(G as ContainerModule);
+            foreach (var module in allModules)
+            {
+                GraphAnalyzer.CheckVariableLoop(module);
+            }
+
             int t = BeginDay * (24 * 60 * 60 / TickSecond);
             int n = TotalDays * (24 * 60 * 60 / TickSecond);
             for (int i = 0; i < n; i++, t++)
@@ -108,10 +118,11 @@ namespace LibArchEnvGraph
         {
             var roomModule = new HeatCapacityModule()
             {
+                Label = $"熱容量M({room.Name})",
+
                 cro = room.cro,
                 V = room.V,
                 dt = TickSecond,
-                Label = room.Name
             };
 
             return roomModule;
@@ -129,7 +140,7 @@ namespace LibArchEnvGraph
 
                 return new SteadyWallModule()
                 {
-                    Label = $"{wall.Name}",
+                    Label = $"定常1次元壁体M({wall.Name})",
 
                     //表面積 [m2]
                     S = wall.S,
@@ -146,7 +157,7 @@ namespace LibArchEnvGraph
             {
                 return new UnsteadyWallModule()
                 {
-                    Label = $"{wall.Name}",
+                    Label = $"非定常1次元壁体M({wall.Name})",
 
                     //比熱
                     cro = wall.cro,
@@ -179,7 +190,10 @@ namespace LibArchEnvGraph
         protected virtual ICalculationGraph Build()
         {
             var F = FunctionFactory;
-            var container = new ContainerModule();
+            var container = new ContainerModule
+            {
+                Label = "全体"
+            };
 
             //日射量データ [W/m2]
             //データ元: 気象庁　http://www.data.jma.go.jp/
@@ -245,17 +259,20 @@ namespace LibArchEnvGraph
                         //透過日射M
                         var solTranM = new SolarTransmissionModule
                         {
+                            Label = $"透過日射M({win.Name})",
+
                             S = win.S,
                             TiltAngle = win.TiltAngle,
                             AzimuthAngle = win.AzimuthAngle,
                             GroundReturnRate = win.GroundReturnRate,
                             SolarThroughRate = win.SolarThroughRate,
 
-                            SolHIn = solPosM.SolAOut,
+                            SolHIn = solPosM.SolHOut,
                             SolAIn = solPosM.SolAOut,
                             SolIn = solarRadiation,
                             DayOfYearIn  =calM.DayOfYearOut
                         };
+
                         container.Modules.Add(solTranM);
 
                         QGT.Add(solTranM.HeatOut);
@@ -300,12 +317,11 @@ namespace LibArchEnvGraph
                     /// | 放射M  |                     | 壁体M |
                     //  |        +-放射out -----> 熱in-+       |
                     //  +--------+                     +-------+
-                    //MR.TempIn[i] = wallModule.TempOut[s];
-                    //wallModule.HeatIn[s].Add(MR.HeatOut[i]);
+                    MR.TempIn[i] = wallModule.TempOut[s];
+                    wallModule.HeatIn[s].Add(MR.HeatOut[i]);
                 }
 
-
-                //container.Modules.Add(MR);
+                container.Modules.Add(MR);
 
                 #region 室内の対流熱移動
                 for (int i = 0; i < Nw; i++)
@@ -345,7 +361,7 @@ namespace LibArchEnvGraph
 
                 var satM = new SolarAirTemperatureModule
                 {
-                    Label = $"吸収日射M({wallModule.Label})",
+                    Label = $"相当外気温度M({wall.Name})",
                     TiltAngle = wall.TiltAngle,
                     AzimuthAngle = wall.AzimuthAngle,
                     GroundReturnRate = wall.GroundReturnRate,

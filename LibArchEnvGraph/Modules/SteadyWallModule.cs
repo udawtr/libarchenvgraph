@@ -113,6 +113,7 @@ namespace LibArchEnvGraph.Modules
 
         public SteadyWallModule()
         {
+            Label = "定常1次元壁体M";
         }
 
         public override void Init(FunctionFactory F)

@@ -125,6 +125,8 @@ namespace LibArchEnvGraph.Modules
 
         public UnsteadyWallModule()
         {
+            Label = "非定常1次元壁体M";
+
             heatCapacityModuleList = new List<HeatCapacityModule>();
             conductiveModuleList = new List<ConductiveHeatTransferModule>();
             nv = new[]
@@ -145,6 +147,7 @@ namespace LibArchEnvGraph.Modules
                 {
                     cro = cro,          //容積比熱
                     V = dx * S,         //容積
+                    dt = dt,
                     Label = $"層壁体{i+1}({Label})"
                 });
             }
@@ -168,8 +171,8 @@ namespace LibArchEnvGraph.Modules
             }
 
             //室外側・室内側層壁体への外部からの熱移動
-            heatCapacityModuleList[0].HeatIn.Add(F.Multiply(dt, F.Concat(HeatIn[0])));
-            heatCapacityModuleList[n_slice - 1].HeatIn.Add(F.Multiply(dt, F.Concat(HeatIn[1])));
+            heatCapacityModuleList[0].HeatIn.Add(F.Concat(HeatIn[0]));
+            heatCapacityModuleList[n_slice - 1].HeatIn.Add(F.Concat(HeatIn[1]));
 
 
             //自然換気設定
@@ -181,7 +184,7 @@ namespace LibArchEnvGraph.Modules
                 this.TempIn[0],  //室外温度
                 heatCapacityModuleList[0].TempOut,  //室外側表面温度(室外側層壁体温度)
             };
-            heatCapacityModuleList[0].HeatIn.Add(F.Multiply(dt, nv[0].HeatOut[1]));
+            heatCapacityModuleList[0].HeatIn.Add(nv[0].HeatOut[1]);
 
             nv[1].Label = $"表面対流熱移動2 ({Label})";
             nv[1].cValue = c[1];
@@ -191,7 +194,7 @@ namespace LibArchEnvGraph.Modules
                 heatCapacityModuleList[n_slice - 1].TempOut,    //室内側表面温度(室内側層壁体温度)
                 this.TempIn[1]  //室内温度
             };
-            heatCapacityModuleList[n_slice - 1].HeatIn.Add(F.Multiply(dt, nv[1].HeatOut[0]));
+            heatCapacityModuleList[n_slice - 1].HeatIn.Add(nv[1].HeatOut[0]);
 
             //出力変数の登録
             (TempOut[0] as LinkVariable<double>).Link = heatCapacityModuleList[0].TempOut;  //室外側表面温度

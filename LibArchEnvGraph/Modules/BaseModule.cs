@@ -23,5 +23,10 @@ namespace LibArchEnvGraph.Modules
         public virtual void Init(FunctionFactory F)
         {
         }
+
+        public override string ToString()
+        {
+            return $"{Label}({this.GetType().ToString()})";
+        }
     }
 }

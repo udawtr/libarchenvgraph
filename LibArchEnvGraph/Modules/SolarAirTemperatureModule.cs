@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph.Modules
 {
     /// <summary>
-    /// 吸収日射を計算するモジュール
+    /// 相当外気温度を計算するモジュール
     /// 
     /// 外気温度,全天日射量,太陽高度角および方位角の入力を受け付け、相当外気温度を計算します。
     /// 
@@ -94,6 +94,11 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public IVariable<double> TempOut { get; private set; } = new LinkVariable<double>();
 
+
+        public SolarAirTemperatureModule()
+        {
+            Label = "相当外気温度M";
+        }
 
         public override void Init(FunctionFactory F)
         {

@@ -45,7 +45,7 @@ namespace Sample2
                 L = 135.52,
                 Lat= 34.68639,
 
-                UseWallSteady = true,
+                UseWallSteady = false,
 
                 House = new House
                 {

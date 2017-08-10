@@ -96,6 +96,11 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public double SolarThroughRate { get; set; }
 
+        public SolarTransmissionModule()
+        {
+            Label = "透過日射M";
+        }
+
         public override void Init(FunctionFactory F)
         {
             // 度 [°] をラジアン [rad] に変換する

@@ -52,6 +52,8 @@ namespace LibArchEnvGraph.Modules
             {
                 this.HeatOut[i] = new LinkVariable<double>("相互放射収支熱量");
             }
+
+            this.Label = "相互放射M";
         }
 
         public override void Init(FunctionFactory F)

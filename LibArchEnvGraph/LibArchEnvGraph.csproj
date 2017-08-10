@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Functions\OverallHeatTransmission.cs" />
+    <Compile Include="GraphAnalyzer.cs" />
     <Compile Include="IRoomModule.cs" />
     <Compile Include="IWallModule.cs" />
     <Compile Include="Modules\CalendarModule.cs" />

@@ -64,6 +64,8 @@ namespace LibArchEnvGraph.Modules
 
         public CalendarModule()
         {
+            Label = "暦M";
+
             DayOfYearOut = new Variable<int>(t => day[t]);
             HourOut = new Variable<int>(t => hour[t]);
             MinuteOut = new Variable<int>(t => minute[t]);

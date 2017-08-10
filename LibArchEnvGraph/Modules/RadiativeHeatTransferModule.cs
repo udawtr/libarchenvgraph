@@ -60,6 +60,11 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public double F12 { get; set; } = 0.0;
 
+        public RadiativeHeatTransferModule()
+        {
+            Label = "放射熱伝達M";
+        }
+
         /// <summary>
         /// 初期化
         /// </summary>
