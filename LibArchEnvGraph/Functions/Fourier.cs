@@ -15,12 +15,12 @@ namespace LibArchEnvGraph.Functions
         /// 熱伝導率 [W/mK]
         /// </summary>
 
-        public double Rambda { get; set; }
+        public double Lambda { get; set; }
 
         /// <summary>
         /// 固体(壁体)の厚み [m]
         /// </summary>
-        public double dx { get; set; }
+        public double Depth { get; set; }
 
         /// <summary>
         /// 熱流の通過面積 [m2]
@@ -39,9 +39,9 @@ namespace LibArchEnvGraph.Functions
 
         public override double Update(int t)
         {
-            System.Diagnostics.Debug.Assert(dx > 0);
+            System.Diagnostics.Debug.Assert(Depth > 0);
 
-            var dU = -1.0 * Rambda * S * (T1.Get(t) - T2.Get(t)) / dx;
+            var dU = -1.0 * Lambda * S * (T1.Get(t) - T2.Get(t)) / Depth;
 
             System.Diagnostics.Debug.WriteLine($"[{t}] Fourier: {T1.Label}:{T1.Get(t)} -> {T2.Label}:{T2.Get(t)} = {dU} [W]");
 

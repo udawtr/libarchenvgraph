@@ -169,9 +169,9 @@ namespace LibArchEnvGraph
                     //自然対流作用の程度
                     c = new[]
                     {
-                    NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
-                    NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
-                }
+                        NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
+                        NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
+                    }
                 };
             }
         }
@@ -238,26 +238,27 @@ namespace LibArchEnvGraph
                 var QGT = new List<IVariable<double>>();
                 for (int i = 0; i < Nw; i++)
                 {
-                    //透過日射
                     if (room.Walls[i].Wall.IsOpen)
                     {
                         var win = room.Walls[i].Wall;
 
-                        var sol_tr = new SolarTransmissionModule(
-                            area: win.S,  //2.0m2
-                            tiltAngle: win.TiltAngle,
-                            azimuthAngle: win.AzimuthAngle,
-                            groundReturnRate: win.GroundReturnRate,
-                            solarThroughRate: win.SolarThroughRate,
-                            solH: solPosM.SolHOut,
-                            solA: solPosM.SolAOut,
-                            sol: solarRadiation,
-                            dayOfYear: calM.DayOfYearOut
-                        );
+                        //透過日射M
+                        var solTranM = new SolarTransmissionModule
+                        {
+                            S = win.S,
+                            TiltAngle = win.TiltAngle,
+                            AzimuthAngle = win.AzimuthAngle,
+                            GroundReturnRate = win.GroundReturnRate,
+                            SolarThroughRate = win.SolarThroughRate,
 
-                        QGT.Add(sol_tr.HeatOut);
+                            SolHIn = solPosM.SolAOut,
+                            SolAIn = solPosM.SolAOut,
+                            SolIn = solarRadiation,
+                            DayOfYearIn  =calM.DayOfYearOut
+                        };
+                        container.Modules.Add(solTranM);
 
-                        container.Modules.Add(sol_tr);
+                        QGT.Add(solTranM.HeatOut);
                     }
                 }
 
@@ -265,7 +266,6 @@ namespace LibArchEnvGraph
                 var sumQGT = F.Concat(QGT);
 
                 #endregion
-
 
                 var MR = new MutualRadiationModule(Nw);
 
@@ -343,7 +343,7 @@ namespace LibArchEnvGraph
                 var wallModule = wallDic[House.OuterSurfaces[i].Wall];
                 var s = House.OuterSurfaces[i].SurfaceNo - 1;
 
-                var SATM = new SolarAirTemperatureModule
+                var satM = new SolarAirTemperatureModule
                 {
                     Label = $"吸収日射M({wallModule.Label})",
                     TiltAngle = wall.TiltAngle,
@@ -355,17 +355,17 @@ namespace LibArchEnvGraph
                     TempIn = outsideTemperature,
                     DayOfYearIn = calM.DayOfYearOut,
                 };
-                container.Modules.Add(SATM);
+                container.Modules.Add(satM);
 
                 if (UseSAT)
                 {
                     //SATを使う場合は、外気温の替わりに相当外気温を設定する
-                    wallModule.TempIn[s] = SATM.TempOut;
+                    wallModule.TempIn[s] = satM.TempOut;
                 }
                 else
                 {
                     //SATを使わずに、日射量と夜間放射に面積を掛けて入力させる
-                    wallModule.HeatIn[s].Add(F.Function(t => (SATM.SolTiltOut.Get(t) + SATM.RadNightOut.Get(t)) * wall.S));
+                    wallModule.HeatIn[s].Add(F.Function(t => (satM.SolTiltOut.Get(t) + satM.RadNightOut.Get(t)) * wall.S));
                     wallModule.TempIn[s] = outsideTemperature;
                 }
 

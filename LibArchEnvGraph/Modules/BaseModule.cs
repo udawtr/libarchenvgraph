@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Modules
 {
+    /// <summary>
+    /// モジュールの基本クラス
+    /// </summary>
     public abstract class BaseModule : ICalculationGraph
     {
+        /// <summary>
+        /// モジュールのラベル
+        /// </summary>
         public string Label { get; set; }
 
         public virtual void Commit(int t)

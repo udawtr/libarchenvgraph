@@ -10,17 +10,25 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 非定常1次元壁体モジュール
     /// 
-    ///               +-------------+
-    ///               |             |
-    ///    HeatIn1 -->+             +--> HeatOut1
-    ///               |  非定常一次 |
-    ///    HeatIn2 -->+  元壁体M    +--> HeatOut2
-    ///               |             |
-    ///    TempIn1 -->+             +--> TempOut1
-    ///               |             |
-    ///    TempIn2 -->+             +--> TempOut2
-    ///               |             |
-    ///               +-------------+
+    ///               +----------+
+    ///               |          |
+    ///    HeatIn1 -->+          +--> HeatOut1
+    ///               |          |
+    ///    HeatIn2 -->+  非定常  +--> HeatOut2
+    ///               |  一次元  |
+    ///    TempIn1 -->+  壁体M   +--> TempOut1
+    ///               |          |
+    ///    TempIn2 -->+          +--> TempOut2
+    ///               |          |
+    ///               +----+-----+
+    ///                    |
+    ///            depth --+
+    ///              cro --+
+    ///          n_slice --+
+    ///                S --+
+    ///           Rambda --+
+    ///                c --+
+    ///               dt --+
     /// 
     /// 入力:
     /// - 奥行 depth [m]
@@ -147,7 +155,7 @@ namespace LibArchEnvGraph.Modules
                 conductiveModuleList.Add(new ConductiveHeatTransferModule
                 {
                     dx = dx,            //層の中心間の距離 [m]
-                    Rambda = Rambda,    //熱伝導率
+                    Lambda = Rambda,    //熱伝導率
                     S = S,              //表面積[m2]
                     Label = $"層壁体{i+1}<=>{i+2}間の熱伝導 ({Label})"
                 });

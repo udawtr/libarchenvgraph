@@ -21,7 +21,12 @@ namespace LibArchEnvGraph.Modules
     ///              |               +--> TempOut
     ///     SolIn -->+               |
     ///              |               |
-    ///              +---------------+
+    ///              +-------+-------+
+    ///                      |
+    ///          TiltAngle --+
+    ///       AzimuthAngle --+
+    ///   GroundReturnRate --+
+    ///
     /// 入力:
     /// - 外気温度 TempIn [K]
     /// - 太陽高度角 SolH [deg]
@@ -102,7 +107,7 @@ namespace LibArchEnvGraph.Modules
             var tiltCos = F.IncidentAngleCosine(TiltAngle, AzimuthAngle, SolHIn, SolAIn);
 
             //直散分離
-            var solDirect = F.DirectSolarRadiation(DayOfYearIn, SolIn, SolHIn);
+            var solDirect = F.DirectSolarRadiation(SolIn, SolHIn, DayOfYearIn);
             var solDiffuse = F.Subtract(SolIn, solDirect);
 
             //傾斜面直達日射量

@@ -19,12 +19,12 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 固体(壁体)の表面温度 [K]
         /// </summary>
-        public IVariable<double> Ts { get; set; }
+        public IVariable<double> T1 { get; set; }
 
         /// <summary>
         /// 流体(空気)の温度 [K]
         /// </summary>
-        public IVariable<double> Tf { get; set; }
+        public IVariable<double> T2 { get; set; }
 
         /// <summary>
         /// 対流熱伝達率 [-]
@@ -34,12 +34,12 @@ namespace LibArchEnvGraph.Functions
 
         public override double Get(int t)
         {
-            var dT = Ts.Get(t) - Tf.Get(t);
+            var dT = T1.Get(t) - T2.Get(t);
             var dU = alpha_c.Get(t) * dT * S;
 
             System.Diagnostics.Debug.Assert(!Double.IsNaN(dU));
 
-            System.Diagnostics.Debug.WriteLine($"[{t}] NewtonCooling: {Ts.Label}:{Ts.Get(t)} -> {Tf.Label}:{Tf.Get(t)} = {dU}");
+            System.Diagnostics.Debug.WriteLine($"[{t}] NewtonCooling: {T1.Label}:{T1.Get(t)} -> {T2.Label}:{T2.Get(t)} = {dU}");
 
             return dU;
         }

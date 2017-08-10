@@ -16,7 +16,11 @@ namespace LibArchEnvGraph.Modules
     ///               |  熱伝導M  |
     ///    HeatIn2 -->+           +--> HeatOut2
     ///               |           |
-    ///               +-----------+
+    ///               +-----+-----+
+    ///                     |
+    ///            Ramdba --+
+    ///                dx --+
+    ///                 S --+
     ///
     /// 入力:
     /// - 熱伝達率 Rambda [W/mK]
@@ -47,7 +51,7 @@ namespace LibArchEnvGraph.Modules
         /// 熱伝導率 [W/mK]
         /// </summary>
 
-        public double Rambda { get; set; }
+        public double Lambda { get; set; }
 
         /// <summary>
         /// 固体(壁体)の厚み [m]
@@ -61,7 +65,7 @@ namespace LibArchEnvGraph.Modules
 
         public override void Init(FunctionFactory F)
         {
-            var fourier = F.Fourier(dx, Rambda, S, TempIn[0], TempIn[1]);
+            var fourier = F.Fourier(dx, Lambda, S, TempIn[0], TempIn[1]);
 
             (HeatOut[0] as LinkVariable<double>).Link = fourier;
             (HeatOut[1] as LinkVariable<double>).Link = new Invert(fourier);

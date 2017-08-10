@@ -23,26 +23,25 @@ namespace LibArchEnvGraph.Functions
     /// </summary>
     public class WindowThroughSolar : BaseVariable<double>
     {
-        private readonly double Area;
+        /// <summary>
+        /// 透過面積 [m2]
+        /// </summary>
+        public double S { get; set; }
 
-        private readonly double SolarThroughRate;
+        /// <summary>
+        /// 垂直入射時の日射透過率 [-]
+        /// </summary>
+        public double SolarThroughRate { get; set; }
 
         /// <summary>
         /// 入射角の方向余弦
         /// </summary>
-        private readonly IVariable<double> TiltCos;
+        public IVariable<double> TiltCos { get; set; }
 
 
-        private readonly IVariable<double> ID, Id;
+        public IVariable<double> SolDirectTilt { get; set; }
 
-        public WindowThroughSolar(double area, double solarThroughRate, IVariable<double> tiltCos, IVariable<double> SolDirectTiltOut, IVariable<double> SolDiffuseTileOut)
-        {
-            this.Area = area;
-            this.SolarThroughRate = solarThroughRate;
-            this.TiltCos = tiltCos;
-            this.ID = SolDirectTiltOut;
-            this.Id = SolDiffuseTileOut;
-        }
+        public IVariable<double> SolDiffuseTile { get; set; }
 
 
         #region 透過日射熱取得量
@@ -62,10 +61,10 @@ namespace LibArchEnvGraph.Functions
             //日射量 [W/m2]
 
             //傾斜面直達日射
-            double ID = this.ID.Get(n);
+            double ID = this.SolDirectTilt.Get(n);
 
             //傾斜面拡散日射
-            double Id = this.Id.Get(n);
+            double Id = this.SolDiffuseTile.Get(n);
 
             //傾斜面全天日射量
             double Iw = ID + Id;
@@ -98,7 +97,7 @@ namespace LibArchEnvGraph.Functions
             //拡散成分
             var GDTS = taud * Id;
 
-            return Area * (QGTD + GDTS);
+            return S * (QGTD + GDTS);
         }
 
         #endregion
@@ -123,7 +122,7 @@ namespace LibArchEnvGraph.Functions
             //拡散成分
             var GDAS = Bd * Id;
 
-            return Area * (QGAD + GDAS);
+            return S * (QGAD + GDAS);
         }
 
         #endregion

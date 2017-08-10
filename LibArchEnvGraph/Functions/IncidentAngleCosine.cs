@@ -17,32 +17,35 @@ namespace LibArchEnvGraph.Functions
     /// </summary>
     public class IncidentAngleCosine : BaseVariable<double>
     {
-        // 度 [°] をラジアン [rad] に変換する
-        const double toRad = Math.PI / 180.0;
+        /// <summary>
+        /// 傾斜角 [deg]
+        /// </summary>
+        public double TiltAngle { get; set; }
 
-        private readonly double tiltAngle;
+        /// <summary>
+        /// 方位角 [deg]
+        /// </summary>
+        public double AzimuthAngle { get; set; }
 
-        private readonly double azimuthAngle;
-
-        private readonly double tiltAngleCos;
-
+        /// <summary>
+        /// 太陽高度角 [deg]
+        /// </summary>
         public IVariable<double> SolH { get; set; }
 
+        /// <summary>
+        /// 太陽方位角 [deg]
+        /// </summary>
         public IVariable<double> SolA { get; set; }
 
-        public IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<double> solH, IVariable<double> solA)
-        {
-            this.tiltAngle = tiltAngle;
-            this.tiltAngleCos = Math.Cos(tiltAngle * Math.PI / 180.0);
-            this.azimuthAngle = azimuthAngle;
-            this.SolH = solH;
-            this.SolA = solA;
-        }
 
         public override double Update(int n)
         {
-            var Ww = Math.Sin(tiltAngle * toRad) * Math.Sin(azimuthAngle * toRad);
-            var Ws = Math.Sin(tiltAngle * toRad) * Math.Cos(azimuthAngle * toRad);
+            const double toRad = Math.PI / 180.0;
+
+            var tiltAngleCos = Math.Cos(TiltAngle * toRad);
+
+            var Ww = Math.Sin(TiltAngle * toRad) * Math.Sin(AzimuthAngle * toRad);
+            var Ws = Math.Sin(TiltAngle * toRad) * Math.Cos(AzimuthAngle * toRad);
 
             var H = SolH.Get(n) * toRad;
             var A = SolA.Get(n) * toRad;

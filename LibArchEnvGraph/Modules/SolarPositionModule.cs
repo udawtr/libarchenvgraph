@@ -9,15 +9,32 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 太陽位置の計算
     /// 
-    ///           +---------+
-    ///           |         |
-    ///           +  太陽   +--> SolHOut
-    ///           |  位置   |
-    ///           +   M     +--> SolAOut
-    ///           |         |
-    ///           +--+--+---+
-    ///              |  |
-    ///              L Lat
+    ///                 +-----------+
+    ///                 |           |
+    ///  DayOfYearIn -->|           |
+    ///                 |           +--> SolHOut
+    ///       HourIn -->|           |
+    ///                 | 太陽位置M |
+    ///     MinuteIn -->|           |
+    ///                 |           +--> SolAOut
+    ///     SecondIn -->|           |
+    ///                 |           |
+    ///                 +-----+-----+
+    ///                       |
+    ///                   L --+
+    ///                 Lat --+
+    ///                 
+    /// 入力:
+    /// - 計算対象地点の緯度(10進数) Lat [deg]
+    /// - 計算対象地点の経度(10進数) L [deg]
+    /// - 年間積算日 DayOfYearIn [日]
+    /// - 時刻の時間部分 HourIn
+    /// - 時刻の分部分 MinuteIn
+    /// - 時刻の秒部分 SecondIn
+    /// 
+    /// 出力:
+    /// - 太陽高度角 SolHOut [deg]
+    /// - 太陽方位角 SolAOut [deg]
     /// </summary>
     public class SolarPositionModule : BaseModule
     {

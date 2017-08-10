@@ -147,14 +147,17 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 換気熱移動量
         /// </summary>
-        public virtual IVariable<double> VentilationHeatTransfer(double V, IVariable<double> Ts, IVariable<double> Tf, double c_air = 1.007, double ro_air = 1.024)
+        /// <param name="cro">流体(空気)容積比熱 [kJ/m3K]</param>
+        /// <param name="T1">固体(壁体)の表面温度 [K]</param>
+        /// <param name="T2">流体(空気)の温度 [K]</param>
+        /// <param name="V">流体(空気)の容積 [m3]</param>
+        public virtual IVariable<double> VentilationHeatTransfer(double V, IVariable<double> T1, IVariable<double> T2, double cro = 1.007 * 1.024)
         {
             return new Functions.VentilationHeatTransfer
             {
-                c_air = c_air,
-                ro_air = ro_air,
-                Ts = Ts,
-                Tf = Tf,
+                cro = cro,
+                T1 = T1,
+                T2 = T2,
                 V = V,
             };
         }
@@ -166,12 +169,17 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 熱伝導による熱移動の計算 (フーリエの法則)
         /// </summary>
-        public virtual IVariable<double> Fourier(double dx, double rambda, double S, IVariable<double> T1, IVariable<double> T2)
+        /// <param name="depth">固体(壁体)の厚み [m]</param>
+        /// <param name="lambda">熱伝導率 [W/mK]</param>
+        /// <param name="S">熱流の通過面積 [m2]</param>
+        /// <param name="T1">温度1 [K]</param>
+        /// <param name="T2">温度2 [K]</param>
+        public virtual IVariable<double> Fourier(double depth, double lambda, double S, IVariable<double> T1, IVariable<double> T2)
         {
             return new Functions.Fourier
             {
-                dx = dx,
-                Rambda = rambda,
+                Depth = depth,
+                Lambda = lambda,
                 S = S,
                 T1 = T1,
                 T2 = T2,
@@ -196,14 +204,14 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 対流による熱伝達の計算 (ニュートンの冷却則)
         /// </summary>
-        public virtual IVariable<double> NewtonCooling(double S, IVariable<double> Ts, IVariable<double> Tf, IVariable<double> alpha_c)
+        public virtual IVariable<double> NewtonCooling(double S, IVariable<double> T1, IVariable<double> T2, IVariable<double> alpha_c)
         {
             return new Functions.NewtonCooling
             {
                 alpha_c = alpha_c,
                 S = S,
-                Ts = Ts,
-                Tf = Tf
+                T1 = T1,
+                T2 = T2
             };
         }
 
@@ -252,22 +260,41 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 直散分離(全天日射から直達日射を分離)
         /// </summary>
-        public virtual IVariable<double> DirectSolarRadiation(IVariable<int> dayOfYear, IVariable<double> sol, IVariable<double> solH)
+        /// <param name="sol">日射量 [W/m2]</param>
+        /// <param name="solH">太陽高度角 [deg]</param>
+        /// <param name="dayOfYear">年間積算日(1-366)</param>
+        public virtual IVariable<double> DirectSolarRadiation(IVariable<double> sol, IVariable<double> solH, IVariable<int> dayOfYear)
         {
+            if (sol == null) throw new InvalidOperationException("日射量を指定してください。");
+            if (solH == null) throw new InvalidOperationException("太陽高度角を指定してください。");
+
             return new Functions.DirectSolarRadiation
             {
-                DayOfYearIn = dayOfYear,
+                SolIn = sol,
                 SolH = solH,
-                SolIn = sol
+                DayOfYearIn = dayOfYear,
             };
         }
 
         /// <summary>
         /// 入射角の方向余弦
         /// </summary>
+        /// <param name="tiltAngle">傾斜角 [deg]</param>
+        /// <param name="azimuthAngle">方位角 [deg]</param>
+        /// <param name="solH">太陽高度角 [deg]</param>
+        /// <param name="solA">太陽方位角 [deg]</param>
         public virtual IVariable<double> IncidentAngleCosine(double tiltAngle, double azimuthAngle, IVariable<double> solH, IVariable<double> solA)
         {
-            return new Functions.IncidentAngleCosine(tiltAngle, azimuthAngle, solH, solA);
+            if (solH == null) throw new InvalidOperationException("太陽高度角を指定してください。");
+            if (solA == null) throw new InvalidOperationException("太陽方位角を指定してください。");
+
+            return new Functions.IncidentAngleCosine
+            {
+                TiltAngle = tiltAngle,
+                AzimuthAngle = azimuthAngle,
+                SolH = solH,
+                SolA = solA,
+            };
         }
 
         /// <summary>
@@ -296,9 +323,27 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 透過日射の計算
         /// </summary>
-        public virtual IVariable<double> ThroughSolar(double area, double solarThroughRate, IVariable<double> tiltCos, IVariable<double> ID, IVariable<double> Id)
+        /// <param name="S">透過面積 [m2]</param>
+        /// <param name="solarThroughRate">垂直入射時の日射透過率 [-]</param>
+        /// <param name="tiltCos">入射角の方向余弦</param>
+        /// <param name="solDirectTilt">傾斜面直達日射量 [W/m2]</param>
+        /// <param name="solDiffuseTilt">傾斜面拡散日射量 [W/m2]</param>
+        public virtual IVariable<double> ThroughSolar(double S, double solarThroughRate, IVariable<double> tiltCos, IVariable<double> solDirectTilt, IVariable<double> solDiffuseTilt)
         {
-            return new Functions.WindowThroughSolar(area, solarThroughRate, tiltCos, ID, Id);
+            if (S <= 0) throw new InvalidOperationException("面積は正の値を指定してください。");
+            if (!(0 <= solarThroughRate && solarThroughRate <= 1.0)) throw new InvalidOperationException("垂直入射時の日射透過率は0.0から1.0の間で指定してください。");
+            if (tiltCos == null) throw new InvalidOperationException("入射角の方向余弦を指定してください。");
+            if (solDirectTilt == null) throw new InvalidOperationException("傾斜面直達日射量を指定してください。");
+            if (solDiffuseTilt == null) throw new InvalidOperationException("傾斜面拡散日射量を指定してください。");
+
+            return new Functions.WindowThroughSolar
+            {
+                S = S,
+                SolarThroughRate = solarThroughRate,
+                TiltCos = tiltCos,
+                SolDirectTilt = solDirectTilt,
+                SolDiffuseTile = solDiffuseTilt
+            };
         }
 
         /// <summary>
@@ -307,6 +352,10 @@ namespace LibArchEnvGraph
         /// <param name="fsol">透過日射分配率 [-]</param>
         public virtual IVariable<double> Split(IVariable<double> Q, double S, double fsol)
         {
+            if (Q == null) throw new InvalidOperationException("透過日射量を指定してください。");
+            if (S <= 0) throw new InvalidOperationException("面積は正の値を指定してください。");
+            if (!(0 <= fsol && fsol <= 1.0)) throw new InvalidOperationException("透過日射分配率は0.0から1.0の間で指定してください。");
+
             return new Functions.Split
             {
                 HeatIn = Q,
@@ -326,6 +375,11 @@ namespace LibArchEnvGraph
         /// <returns>実効放射量[W/m2]</returns>
         public virtual IVariable<double> Brunt(double theta, IVariable<double> Ta, IVariable<double> f, IVariable<double> k, IVariable<double> c)
         {
+            if (Ta == null) throw new InvalidOperationException("地表付近の空気の絶対温度を指定してください。");
+            if (f == null) throw new InvalidOperationException("地表付近の空気の水蒸気分圧を指定してください。");
+            if (k == null) throw new InvalidOperationException("雲高によって決まる修正定数を指定してください。");
+            if (c == null) throw new InvalidOperationException("雲量を指定してください。");
+
             return new Functions.Brunt
             {
                 theta = theta,

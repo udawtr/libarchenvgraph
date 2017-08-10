@@ -12,19 +12,34 @@ namespace LibArchEnvGraph.Modules
     /// 
     /// 全天日射量,太陽高度角および方位角の入力を受け付け、透過日射熱取得量を計算します。
     /// 
-    ///              +-----------+
-    ///              |           |
-    ///    SolHIn -->+           |
-    ///              |           |
-    ///    SolAIn -->+ 透過日射M +--> HeatOut
-    ///              |           |
-    ///     SolIn -->+           |
-    ///              |           |
-    ///              +-----------+
+    ///                 +-----------+
+    ///                 |           |
+    ///       SolHIn -->+           |
+    ///                 |           |
+    ///       SolAIn -->+           |
+    ///                 | 透過日射M +--> HeatOut
+    ///        SolIn -->+           |
+    ///                 |           |
+    ///  DayOfYearIn -->+           |
+    ///                 |           |
+    ///                 +-----+-----+
+    ///                       |
+    ///                   S --+
+    ///           TiltAngle --+
+    ///        AzimuthAngle --+
+    ///    GroundReturnRate --+
+    ///    SolarThroughRate --+
+    /// 
     /// 入力:
     /// - 太陽高度角 SolH [deg]
     /// - 太陽方位角 SolA [deg]
     /// - 日射量     SolIn [W/m2]
+    /// - 年間積算日 DayOfYearIn [日]
+    /// - 開口部面積 S [m2]
+    /// - 傾斜角     TiltAngle [deg]
+    /// - 方位角     AzimuthAngle [deg]
+    /// - 地面日射反射率 GroundReturnRate [-]
+    /// - 垂直入射時の日射透過率 SolarThroughRate [-]
     /// 
     /// 出力:
     /// - 透過日射熱取得量 HeatOut [W]
@@ -51,60 +66,62 @@ namespace LibArchEnvGraph.Modules
         /// </summary>
         public IVariable<double> HeatOut { get; private set; } = new LinkVariable<double>();
 
+        /// <summary>
+        /// 年間積算日(1-366)
+        /// </summary>
+        public IVariable<int> DayOfYearIn { get; set; }
 
         /// <summary>
-        /// コンストラクタ
+        /// 開口部面積[m2]
         /// </summary>
-        /// <param name="area">開口部面積[m2]</param>
-        /// <param name="tiltAngle">傾斜角 [°]</param>
-        /// <param name="azimuthAngle">方位角 [°]</param>
-        /// <param name="groundReturnRate">地面日射反射率 [-]</param>
-        /// <param name="solarThroughRate">垂直入射時の日射透過率 [-]</param>
-        /// <param name="solPos">太陽高度と方位角</param>
-        /// <param name="sol">日射量</param>
-        public SolarTransmissionModule(
-            double area,
-            double tiltAngle,
-            double azimuthAngle,
-            double groundReturnRate,
-            double solarThroughRate,
-            IVariable<double> sol,
-            IVariable<double> solH,
-            IVariable<double> solA,
-            IVariable<int> dayOfYear
-            )
+        public double S { get; set; }
+
+        /// <summary>
+        /// 傾斜角 [deg]
+        /// </summary>
+        public double TiltAngle { get; set; }
+
+        /// <summary>
+        /// 方位角 [deg]
+        /// </summary>
+        public double AzimuthAngle { get; set; }
+
+        /// <summary>
+        /// 地面日射反射率 [-]
+        /// </summary>
+        public double GroundReturnRate { get; set; }
+
+        /// <summary>
+        /// 垂直入射時の日射透過率 [-]
+        /// </summary>
+        public double SolarThroughRate { get; set; }
+
+        public override void Init(FunctionFactory F)
         {
             // 度 [°] をラジアン [rad] に変換する
             const double toRad = Math.PI / 180.0;
 
-            var F = new FunctionFactory();
-
-            var tiltAngleCos = Math.Cos(tiltAngle * toRad);
-
-            //パラメータ保存
-            this.SolIn = sol;
-            this.SolAIn = solA;
-            this.SolHIn = solH;
+            var tiltAngleCos = Math.Cos(TiltAngle * toRad);
 
             //入射角の方向余弦
-            var tiltCos = F.IncidentAngleCosine(tiltAngle, azimuthAngle, solH, solA);
+            var tiltCos = F.IncidentAngleCosine(TiltAngle, AzimuthAngle, SolHIn, SolAIn);
 
             //直散分離
-            var solDirect = F.DirectSolarRadiation(dayOfYear, sol, solH);
-            var solDiffuse = F.Subtract(sol, solDirect);
+            var solDirect = F.DirectSolarRadiation(SolIn, SolHIn, DayOfYearIn);
+            var solDiffuse = F.Subtract(SolIn, solDirect);
 
             //傾斜面直達日射量
             var solDirectTilt = F.TiltDirectSolarRadiation(tiltCos, solDirect);
 
             //傾斜面拡散日射量
             var shapeFactorToSky = (1.0 + tiltAngleCos) / 2.0;
-            var solDiffuseTile = F.TiltDiffusedSolarRadiation(shapeFactorToSky, groundReturnRate, solH, solDirect, solDiffuse);
+            var solDiffuseTilt = F.TiltDiffusedSolarRadiation(shapeFactorToSky, GroundReturnRate, SolHIn, solDirect, solDiffuse);
 
             //傾斜面全天日射量
             //var solTiltOut = F.Add(solDirectTilt, solDiffuseTile);
 
             //透過日射熱 [W]
-            var solTran = F.ThroughSolar(area, solarThroughRate, tiltCos, solDirectTilt, solDiffuseTile);
+            var solTran = F.ThroughSolar(S, SolarThroughRate, tiltCos, solDirectTilt, solDiffuseTilt);
 
             //最終出力
             (HeatOut as LinkVariable<double>).Link = solTran;

@@ -27,18 +27,37 @@ namespace LibArchEnvGraph.Modules
     /// </summary>
     public class CalendarModule : BaseModule
     {
-        public int BeginDay { get; set; }
-
-        public int TotalDays { get; set; }
-
+        /// <summary>
+        /// 計算間隔 [s]
+        /// </summary>
         public int TickSecond { get; set; }
 
+        /// <summary>
+        /// 計算開始日
+        /// </summary>
+        public int BeginDay { get; set; }
+
+        /// <summary>
+        /// 計算日数
+        /// </summary>
+        public int TotalDays { get; set; }
+
+        /// <summary>
+        /// 年間積算日[日] (1始まり最大366)
+        /// </summary>
         public IVariable<int> DayOfYearOut { get; private set; }
 
+        /// <summary>
+        /// 時刻の時間部分(0-23)
+        /// </summary>
         public IVariable<int> HourOut { get; private set; }
 
+        /// <summary>
+        /// 時刻の分部分(0-59)
+        /// </summary>
         public IVariable<int> MinuteOut { get; private set; }
 
+        /// 時刻の秒部分(0-59)
         public IVariable<int> SecondOut { get; private set; }
 
         private int[] day, hour, minute, second;

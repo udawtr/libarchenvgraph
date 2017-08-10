@@ -15,8 +15,11 @@ namespace LibArchEnvGraph.Modules
     ///             | 換気熱移動M |
     ///  TempIn2 -->+             +--> HeatOut2
     ///             |             |
-    ///             +-------------+
-    /// 
+    ///             +------+------+
+    ///                    |
+    ///            c_air --+
+    ///           ro_air --+
+    ///                V --+
     /// 入力:
     /// - 流体(空気)比熱 c_air [J/kgK]
     /// - 流体(空気)密度 ro_air [kg/m3]
@@ -42,14 +45,9 @@ namespace LibArchEnvGraph.Modules
     public class VentilationHeatTransferModule : HeatTransferModule
     {
         /// <summary>
-        /// 流体(空気)比熱 [J/kgK]
+        /// 流体(空気)容積比熱 [kJ/m3K]
         /// </summary>
-        public double c_air { get; set; } = 1.007;
-
-        /// <summary>
-        /// 流体(空気)密度 [kg/m3]
-        /// </summary>
-        public double ro_air { get; set; } = 1.024;
+        public double cro { get; set; } = 1.007 * 1.024;
 
         /// <summary>
         /// 流体(空気)の容積 [m3]
@@ -59,7 +57,10 @@ namespace LibArchEnvGraph.Modules
 
         public override void Init(FunctionFactory F)
         {
-            var baseFunction = F.VentilationHeatTransfer(V, TempIn[0], TempIn[1], c_air, ro_air);
+            if (cro <= 0.0) throw new InvalidOperationException("容積比熱を設定してください。");
+            if (V <= 0.0) throw new InvalidOperationException("容積を設定してください。");
+
+            var baseFunction = F.VentilationHeatTransfer(V, TempIn[0], TempIn[1], cro);
 
             (HeatOut[0] as LinkVariable<double>).Link = new Functions.Invert(baseFunction);
             (HeatOut[1] as LinkVariable<double>).Link = baseFunction;

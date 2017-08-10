@@ -67,8 +67,8 @@ namespace LibArchEnvGraphTest
             var target = new NewtonCooling();
             target.alpha_c = new Variable<double>(1.23);
             target.S = 4.0;
-            target.Ts = new Variable<double>(20.0);
-            target.Tf = new Variable<double>(10.0);
+            target.T1 = new Variable<double>(20.0);
+            target.T2 = new Variable<double>(10.0);
 
             var dT = 20.0 - 10.0;
             var q = 1.23 * dT * 4.0;
@@ -95,8 +95,8 @@ namespace LibArchEnvGraphTest
         public void FourierTest()
         {
             var target = new Fourier();
-            target.Rambda = 0.1;
-            target.dx = 0.2;
+            target.Lambda = 0.1;
+            target.Depth = 0.2;
             target.S = 10.0;
             target.T1 = new Variable<double>(20.0);
             target.T2 = new Variable<double>(10.0);

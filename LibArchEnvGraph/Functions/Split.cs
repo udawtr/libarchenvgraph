@@ -8,6 +8,13 @@ namespace LibArchEnvGraph.Functions
 {
     /// <summary>
     /// 室内表面の吸収日射量を分配するクラス
+    /// 
+    /// 
+    ///            +-------+
+    ///            |       |
+    ///  HeatIn -->+ 分配F +--> HeatOut
+    ///            |       |
+    ///            +-------+
     /// </summary>
     /// <remarks>
     /// 入射してしてきた日射を面積に応じて床や壁に分配します。

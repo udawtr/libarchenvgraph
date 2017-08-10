@@ -10,14 +10,6 @@ namespace LibArchEnvGraph.Modules
     /// <summary>
     /// 熱移動モジュール(抽象クラス)
     /// 
-    /// 入力:
-    /// - 表面温度 TempIn [K]
-    /// 
-    /// 出力:
-    /// - 熱移動量 HeatOut [W]
-    /// </summary>
-    /// <remarks>
-    /// 
     ///               +-----------+
     ///               |           |
     ///    HeatIn1 -->+           +--> HeatOut1
@@ -26,7 +18,12 @@ namespace LibArchEnvGraph.Modules
     ///               |           |
     ///               +-----------+
     /// 
-    /// </remarks>
+    /// 入力:
+    /// - 表面温度 TempIn [K]
+    /// 
+    /// 出力:
+    /// - 熱移動量 HeatOut [W]
+    /// </summary>
     /// <seealso cref="ConductiveHeatTransferModule"/>
     /// <seealso cref="ConvectiveHeatTransferModule"/>
     /// <seealso cref="HeatTransferModule"/>

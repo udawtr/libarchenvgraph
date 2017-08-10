@@ -12,24 +12,19 @@ namespace LibArchEnvGraph.Functions
     public class VentilationHeatTransfer : BaseVariable<double>
     {
         /// <summary>
-        /// 流体(空気)比熱 [J/kgK]
+        /// 流体(空気)容積比熱 [kJ/m3K]
         /// </summary>
-        public double c_air { get; set; } = 1.007;
-
-        /// <summary>
-        /// 流体(空気)密度 [kg/m3]
-        /// </summary>
-        public double ro_air { get; set; } = 1.024;
+        public double cro { get; set; } = 1.007 * 1.024;
 
         /// <summary>
         /// 固体(壁体)の表面温度 [K]
         /// </summary>
-        public IVariable<double> Ts { get; set; }
+        public IVariable<double> T1 { get; set; }
 
         /// <summary>
         /// 流体(空気)の温度 [K]
         /// </summary>
-        public IVariable<double> Tf { get; set; }
+        public IVariable<double> T2 { get; set; }
 
         /// <summary>
         /// 流体(空気)の容積 [m3]
@@ -38,7 +33,7 @@ namespace LibArchEnvGraph.Functions
 
         public override double Update(int t)
         {
-            var dU = c_air * ro_air * V * (Ts.Get(t) - Tf.Get(t));
+            var dU = cro * V * (T1.Get(t) - T2.Get(t));
             return dU;
         }
     }

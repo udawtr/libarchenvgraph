@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace LibArchEnvGraph.Modules
 {
+    /// <summary>
+    /// コンテナモジュール
+    /// 
+    /// 他のモジュールを格納するモジュール。
+    /// 一括で初期化やコミットを行うメソッドを提供します。
+    /// </summary>
     public class ContainerModule : BaseModule
     {
         public List<ICalculationGraph> Modules { get; set; } = new List<ICalculationGraph>();
