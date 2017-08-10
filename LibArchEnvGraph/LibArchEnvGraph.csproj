@@ -54,6 +54,7 @@
     <Compile Include="IRoomModule.cs" />
     <Compile Include="IWallModule.cs" />
     <Compile Include="Modules\HeatTransferModule.cs" />
+    <Compile Include="Modules\SolarAirTemperatureModule.cs" />
     <Compile Include="Modules\SteadyWallModule.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="Functions\Concat.cs" />

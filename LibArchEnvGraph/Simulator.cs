@@ -72,7 +72,7 @@ namespace LibArchEnvGraph
         /// <remarks>
         /// 壁体への入射熱取得への計算に相当温度を用います。
         /// </remarks>
-        public bool UseSAT { get; set; } = false;
+        public bool UseSAT { get; set; } = true;
 
 
         /// <summary>
@@ -338,32 +338,25 @@ namespace LibArchEnvGraph
                 {
                     #region 相当外気温度(SAT)
 
-                    var cos = F.IncidentAngleCosine(wall.TiltAngle, wall.AzimuthAngle, sol_pos.SolHOut, sol_pos.SolAOut);
-                    var ID = F.DirectSolarRadiation(TickSecond, BeginDay, TotalDays, solarRadiation, sol_pos.SolHOut);
-                    var Id = F.Subtract(solarRadiation, ID);
-
-                    //直達日射(傾斜)
-                    var J_dt = F.TiltDirectSolarRadiation(cos, ID);
-
-                    //天空日射(傾斜)
-                    var J_st = F.TiltDiffusedSolarRadiation(1, wall.GroundReturnRate, sol_pos.SolHOut, ID, Id);
-
-                    //反射日射
-                    var J_h = F.Add(ID, Id);
-                    var J_rt = F.Function(t => (1.0 - (1.0 + cos.Get(t)) / 2) * 0.25 * J_h.Get(t));
-
-                    //日射(傾斜)
-                    var J_t = F.Concat(J_dt, J_st, J_rt);
-
-                    //実効放射
-                    var J_e = F.Brunt(wall.TiltAngle * Math.PI / 180, outsideTemperature, F.Variable(4.28), F.Variable(0.8), F.Variable(1));
-                    var SAT = F.SAT(To: outsideTemperature, J: J_t, J_e: J_e);
-
-                    SAT.Label = $"{wallModule.Label} - 外気相当温度[K]";
+                    var SATM = new SolarAirTemperatureModule
+                    {
+                        Label = $"吸収日射M({wallModule.Label})",
+                        TiltAngle = wall.TiltAngle,
+                        AzimuthAngle = wall.AzimuthAngle,
+                        GroundReturnRate = wall.GroundReturnRate,
+                        SolHIn = sol_pos.SolHOut,
+                        SolAIn = sol_pos.SolAOut,
+                        SolIn = solarRadiation,
+                        TempIn = outsideTemperature,
+                        TickSecond = TickSecond,
+                        BeginDay = BeginDay,
+                        TotalDays = TotalDays,
+                    };
+                    container.Modules.Add(SATM);
 
                     #endregion
 
-                    wallModule.TempIn[s] = SAT;
+                    wallModule.TempIn[s] = SATM.TempOut;
                 }
                 else
                 {
