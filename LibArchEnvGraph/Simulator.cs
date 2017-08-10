@@ -91,20 +91,12 @@ namespace LibArchEnvGraph
             G.Init(F);
 
             int t = BeginDay * (24 * 60 * 60 / TickSecond);
-            for (int i = 0; i < TotalDays; i++)
+            int n = TotalDays * (24 * 60 * 60 / TickSecond);
+            for (int i = 0; i < n; i++, t++)
             {
-                for (int h = 0; h < 24; h++)
-                {
-                    for (int m = 0; m < 60; m++)
-                    {
-                        for (int s = 0; s < 60 * 60; s++, t++)
-                        {
-                            G.Commit(t);
+                G.Commit(i);
 
-                            Console.WriteLine($"{OutsideTemperature.Get(t)}\t{SolarRadiation.Get(t)}\t{House.OuterSurfaces[0].Temperature.Get(t)}\t{House.Rooms[0].Walls[0].Temperature.Get(t)}\t{House.Rooms[0].RoomTemperature.Get(t)}");
-                        }
-                    }
-                }
+                Console.WriteLine($"{t}, {OutsideTemperature.Get(t)}\t{SolarRadiation.Get(t)}\t{House.OuterSurfaces[0].Temperature.Get(t)}\t{House.Rooms[0].Walls[0].Temperature.Get(t)}\t{House.Rooms[0].RoomTemperature.Get(t)}");
             }
         }
 
@@ -192,13 +184,13 @@ namespace LibArchEnvGraph
             //日射量データ [W/m2]
             //データ元: 気象庁　http://www.data.jma.go.jp/
             var radlist = CSVSource<SolarRadiationCSVRow>.ToList(SolarRadiationFilename, Encoding.GetEncoding(932));
-            var solarRadiation = F.Interpolate(radlist.Select(x => x.SolarRadiation * 1000.0 / 3.6).ToArray(), 60 * 60);
+            var solarRadiation = F.Interpolate(radlist.Select(x => x.SolarRadiation * 1000.0 / 3.6).ToArray(), 60 * 60 / TickSecond);
             solarRadiation.Label = "日射量[W/m2]";
 
             //外気データ(大阪市)
             //データ元: 気象庁　http://www.data.jma.go.jp/
             var templist = CSVSource<OutsideTemperatureCSVRow>.ToList(OutsideTemperatureFilename, Encoding.GetEncoding(932));
-            var outsideTemperature = F.Interpolate(templist.Select(x => x.Temp + 273.15).ToArray(), 60 * 60);
+            var outsideTemperature = F.Interpolate(templist.Select(x => x.Temp + 273.15).ToArray(), 60 * 60 / TickSecond);
             outsideTemperature.Label = "外気温[K]";
 
             var _walls = House.Walls.Select(x => GetCalcuationGraph(x)).ToArray();

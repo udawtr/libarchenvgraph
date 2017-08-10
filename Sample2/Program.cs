@@ -37,7 +37,7 @@ namespace Sample2
             {
                 TickSecond = 60,
                 BeginDay = 0,
-                TotalDays = 1,
+                TotalDays = 10,
 
                 OutsideTemperatureFilename = "s47772_201.csv",
                 SolarRadiationFilename = "s47772_610.csv",
