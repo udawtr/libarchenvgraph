@@ -72,7 +72,7 @@ namespace LibArchEnvGraph
         /// <remarks>
         /// 壁体への入射熱取得への計算に相当温度を用います。
         /// </remarks>
-        public bool UseSAT { get; set; } = true;
+        public bool UseSAT { get; set; } = false;
 
 
         /// <summary>
@@ -333,34 +333,31 @@ namespace LibArchEnvGraph
                 var wallModule = wallDic[House.OuterSurfaces[i].Wall];
                 var s = House.OuterSurfaces[i].SurfaceNo - 1;
 
-                //SATを使う場合は、外気温の替わりに相当外気温を設定する
+                var SATM = new SolarAirTemperatureModule
+                {
+                    Label = $"吸収日射M({wallModule.Label})",
+                    TiltAngle = wall.TiltAngle,
+                    AzimuthAngle = wall.AzimuthAngle,
+                    GroundReturnRate = wall.GroundReturnRate,
+                    SolHIn = sol_pos.SolHOut,
+                    SolAIn = sol_pos.SolAOut,
+                    SolIn = solarRadiation,
+                    TempIn = outsideTemperature,
+                    TickSecond = TickSecond,
+                    BeginDay = BeginDay,
+                    TotalDays = TotalDays,
+                };
+                container.Modules.Add(SATM);
+
                 if (UseSAT)
                 {
-                    #region 相当外気温度(SAT)
-
-                    var SATM = new SolarAirTemperatureModule
-                    {
-                        Label = $"吸収日射M({wallModule.Label})",
-                        TiltAngle = wall.TiltAngle,
-                        AzimuthAngle = wall.AzimuthAngle,
-                        GroundReturnRate = wall.GroundReturnRate,
-                        SolHIn = sol_pos.SolHOut,
-                        SolAIn = sol_pos.SolAOut,
-                        SolIn = solarRadiation,
-                        TempIn = outsideTemperature,
-                        TickSecond = TickSecond,
-                        BeginDay = BeginDay,
-                        TotalDays = TotalDays,
-                    };
-                    container.Modules.Add(SATM);
-
-                    #endregion
-
+                    //SATを使う場合は、外気温の替わりに相当外気温を設定する
                     wallModule.TempIn[s] = SATM.TempOut;
                 }
                 else
                 {
-                    //TODO: 外壁への入射量を壁体モジュールへ入れる
+                    //SATを使わずに、日射量と夜間放射に面積を掛けて入力させる
+                    wallModule.HeatIn[s].Add(F.Function(t => (SATM.SolTiltOut.Get(t) + SATM.RadNightOut.Get(t)) * wall.S));
                     wallModule.TempIn[s] = outsideTemperature;
                 }
 
