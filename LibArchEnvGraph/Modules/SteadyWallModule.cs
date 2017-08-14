@@ -121,30 +121,23 @@ namespace LibArchEnvGraph.Modules
             if (!(S > 0.0)) throw new InvalidOperationException($"表面積を設定してから初期化してください。");
             if (!(K > 0.0)) throw new InvalidOperationException($"熱貫流率を設定してから初期化してください。");
             if (!(a_i > 0.0 && a_o > 0.0)) throw new InvalidOperationException($"表面熱伝達率を設定してから初期化してください。");
+            if (!(1.0/K > 1.0/a_i + 1.0/a_o)) throw new InvalidOperationException($"熱貫流率が表面熱伝達率に比べ大きすぎます。");
 
-            var SATo = F.Function(t => TempIn[0].Get(t) + F.Concat(HeatIn[0]).Get(t) / a_o);
-            var SATi = F.Function(t => TempIn[1].Get(t) + F.Concat(HeatIn[1]).Get(t) / a_i);
+            var Qin0 = F.Concat(HeatIn[0]);
+            var Qin1 = F.Concat(HeatIn[1]);
 
-            //定常状態であるから
-            // K * (SATo - SATi) = a_o * (SATo - Tso)
-            // 故に、 (SATo - SATi) * K / a_o = SATo - Tso
-            //        Tso = SATo - (SATo - SATi) * K / a_o
-            //            = SATo * (1.0 - K / a_o) + SATi * (K / a_o);
-            var Tso = F.Function(t => SATo.Get(t) * (1.0 - K / a_o) + SATi.Get(t) * (K / a_o));
+            var SATo = F.Function(t => TempIn[0].Get(t) + Qin0.Get(t) / a_o / S);
+            var SATi = F.Function(t => TempIn[1].Get(t) + Qin1.Get(t) / a_i / S);
 
-            //定常状態であるから
-            // K * (SATo - SATi) = a_i * (Tsi - SATi)
-            // 故に、(SATo - SATi) * K / a_i = Tsi - SATi
-            //       Tsi = (SATo - SATi) * K / a_i + SATi
-            //           = SATo * K / a_i + SATi * (1.0 - K / a_i)
-            var Tsi = F.Function(t => SATo.Get(t) * K / a_i + SATi.Get(t) * (1.0 - K / a_i));
+            var Tso = F.Function(t => TempIn[0].Get(t) - (TempIn[0].Get(t) - TempIn[1].Get(t)) * (K / a_o));
+            var Tsi = F.Function(t => TempIn[1].Get(t) + (TempIn[0].Get(t) - TempIn[1].Get(t)) * (K / a_i));
 
             var Q = F.OverallHeatTransmission(SATo, SATi, K, S);
 
             (TempOut[0] as LinkVariable<double>).Link = F.Memory(Tso);
             (TempOut[1] as LinkVariable<double>).Link = F.Memory(Tsi);
-            (HeatOut[0] as LinkVariable<double>).Link = F.Invert(Q);
-            (HeatOut[1] as LinkVariable<double>).Link = Q;
+            (HeatOut[0] as LinkVariable<double>).Link = F.Add(F.Invert(Q), Qin0);
+            (HeatOut[1] as LinkVariable<double>).Link = F.Add(Q, Qin1);
         }
 
         public override void Commit(int t)
