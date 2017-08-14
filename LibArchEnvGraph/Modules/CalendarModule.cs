@@ -118,7 +118,7 @@ namespace LibArchEnvGraph.Modules
                     {
                         for (int m = 0; m < 60; m++)
                         {
-                            for (int s = 0; s < 60; s++, t++)
+                            for (int s = 0; s < 60; s += TickSecond, t++)
                             {
                                 day[t] = i + 1;
                                 hour[t] = h;
@@ -137,7 +137,7 @@ namespace LibArchEnvGraph.Modules
                 {
                     for (int h = 0; h < 24; h++)
                     {
-                        for (int m = 0; m < 60; m++)
+                        for (int m = 0; m < 60; m += TickSecond / 60, t++)
                         {
                             day[t] = i + 1;
                             hour[t] = h;
