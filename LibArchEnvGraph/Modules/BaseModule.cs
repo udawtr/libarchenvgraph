@@ -26,7 +26,8 @@ namespace LibArchEnvGraph.Modules
 
         public override string ToString()
         {
-            return $"{Label}({this.GetType().ToString()})";
+            if (Label != null) return Label;
+            return $"{this.GetType().ToString()}";
         }
     }
 }

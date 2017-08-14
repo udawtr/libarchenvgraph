@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace LibArchEnvGraph
 {
     using Modules;
+    using System.Collections;
     using System.Reflection;
 
     /// <summary>
@@ -84,41 +85,108 @@ namespace LibArchEnvGraph
             //それぞれのVariableに対して参照を辿る
             foreach (var varItem in varList)
             {
-                //LinkVariableから出発する場合のみ確認
-                if (IsLinkVariable(varItem.PropertyType))
+                //LinkVariableから出発する場合は無視
+                if (IsLinkVariable(varItem.PropertyType) || IsLinkVariable(GetEnumeratedType(varItem.PropertyType)))
                 {
-                    //プロパティ間での相互参照チェック
-                    var varValue = varItem.GetValue(varContainer);
-                    var refProp = varList.Where(x => varItem != x).SingleOrDefault(x => x.GetValue(varContainer) == varValue);
-                    if (refProp != null)
-                    {
-                        throw new Exception($"{varValue}({varItem.Name})の{varItem.Name}が{varContainer}の{refProp.Name}を参照しています。");
-                    }
+                    continue;
+                }
 
-                    InnerCheckVariableLoop(varContainer, varItem, varContainer, varList);
+                System.Diagnostics.Debug.Write($"* {varContainer}.{varItem.Name}");
+
+                //プロパティ間での相互参照チェック
+                var varValue = varItem.GetValue(varContainer);
+
+                // 値がnullの場合は辿れません。
+                if (varValue == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($" -> null");
+                    continue;
+                }
+
+                //出力の参照が入力に設定されていないか?
+                PropertyInfo refProp = varList.Where(x => varItem != x).SingleOrDefault(x => x.GetValue(varContainer) == varValue);
+                if (refProp != null 
+                && (IsLinkVariable(refProp.PropertyType) || IsLinkVariable(GetEnumeratedType(refProp.PropertyType))) )
+                {
+                    throw new Exception($"{varValue}({varItem.Name})の{varItem.Name}が{varContainer}の{refProp.Name}を参照しています。");
+                }
+
+                System.Diagnostics.Debug.WriteLine("");
+                InnerCheckVariableLoop(varContainer, varItem, varContainer, varList);
+            }
+        }
+
+        private static void InnerCheckVariableLoop(object containerInstance, PropertyInfo inVariableProperty, object varRootContainer, List<PropertyInfo> varList)
+        {
+            //モジュールの入力変数を展開して確認
+            foreach(object inVariableInstance in ExpandValues(inVariableProperty, containerInstance))
+            {
+                //
+                //ファンクションの入力がファンクション自体を参照している場合の確認
+                //
+
+                System.Diagnostics.Debug.Write($" Check: {containerInstance}.{inVariableProperty.Name} => {containerInstance} ... ");
+
+                if (inVariableInstance == varRootContainer)
+                {
+                    System.Diagnostics.Debug.WriteLine("NG");
+                    throw new Exception($"'{varRootContainer}'の{inVariableProperty.Name}が'{varRootContainer}'を参照しています。");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("OK");
+                }
+
+                //
+                // 入力変数の計算過程を確認
+                //
+
+                var inVariablePropertiesOfInVariableInstance = GetVariableList(inVariableInstance);
+                foreach (PropertyInfo inVariablePropertyOfInVariableInstance in inVariablePropertiesOfInVariableInstance)
+                {
+                    foreach (var inVariableInstanceOfInVariableInstance in ExpandValues(inVariablePropertyOfInVariableInstance, inVariableInstance))
+                    {
+                        System.Diagnostics.Debug.Write($" Check: {containerInstance}.{inVariableProperty.Name} => {inVariableInstance}.{inVariablePropertyOfInVariableInstance.Name} ... ");
+
+                        var refProp = varList.FirstOrDefault(x => x.GetValue(varRootContainer) == inVariableInstanceOfInVariableInstance);
+                        if (refProp != null
+                        && (IsLinkVariable(refProp.PropertyType) || IsLinkVariable(GetEnumeratedType(refProp.PropertyType))))
+                        {
+                            System.Diagnostics.Debug.WriteLine("NG");
+                            throw new Exception($"{containerInstance}の{inVariablePropertyOfInVariableInstance.Name}が{varRootContainer}の{refProp.Name}を参照しています。");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("OK");
+                        }
+
+                        InnerCheckVariableLoop(inVariableInstance, inVariablePropertyOfInVariableInstance, varRootContainer, varList);
+                    }
                 }
             }
         }
 
-        private static void InnerCheckVariableLoop(object varItemContainer, PropertyInfo varItem, object varRootContainer, List<PropertyInfo> varList)
+        public static IEnumerable<object> ExpandValues(PropertyInfo propInfo, object target)
         {
-            //プロパティを取得
-            var varValue = varItem.GetValue(varItemContainer);
-            if (varValue != null)
+            var propValue = propInfo.GetValue(target);
+            if( propValue is System.Collections.IEnumerable)
             {
-                if (varValue == varRootContainer) throw new Exception($"'{varRootContainer}'の{varItem.Name}が'{varRootContainer}'を参照しています。");
-
-                var varList2 = GetVariableList(varValue);
-                foreach (var varItem2 in varList2)
+                //配列等なので、個別の値を返す
+                var ar = propValue as System.Collections.IEnumerable;
+                foreach (var item in ar)
                 {
-                    var varValue2 = varItem2.GetValue(varValue);
-                    var refProp2 = varList.SingleOrDefault(x => x.GetValue(varRootContainer) == varValue2);
-                    if (refProp2 != null)
+                    if (item != null)
                     {
-                        throw new Exception($"{varValue}({varItem.Name})の{varItem2.Name}が{varRootContainer}の{refProp2.Name}を参照しています。");
+                        yield return item;
                     }
-
-                    InnerCheckVariableLoop(varValue, varItem2, varRootContainer, varList);
+                }
+            }
+            else
+            {
+                //配列等ではない
+                if (propValue != null)
+                {
+                    yield return propValue;
                 }
             }
         }
@@ -130,10 +198,31 @@ namespace LibArchEnvGraph
             var T = varContainer.GetType();
             var properties = T.GetProperties();
 
+            ////LinkVariableの場合はLink先を展開する
+            //if (IsLinkVariable(GetEnumeratedType(T)))
+            //{
+            //    foreach(var element in varContainer as Array)
+            //    {
+            //        if (element != null)
+            //        {
+            //            list.AddRange(GetVariableList(element));
+            //        }
+            //    }
+            //    return list;
+            //}
+            //else if (IsLinkVariable(T) )
+            //{
+            //    var link = T.GetProperty("Link").GetValue(varContainer);
+            //    if (link != null)
+            //    {
+            //        return GetVariableList(link);
+            //    }
+            //}
+
             foreach (var prop in properties)
             {
-                if(IsIVariable(prop.PropertyType))
-                { 
+                if (IsIVariable(prop.PropertyType) || IsIVariable(GetEnumeratedType(prop.PropertyType)))
+                {
                     list.Add(prop);
                 }
             }
@@ -143,6 +232,8 @@ namespace LibArchEnvGraph
 
         private static bool IsIVariable(Type type)
         {
+            if (type == null) return false;
+
             foreach (var propT in GetParentTypes(type))
             {
                 if (propT.IsGenericType && propT.GetGenericTypeDefinition() == typeof(IVariable<>))
@@ -155,6 +246,8 @@ namespace LibArchEnvGraph
 
         private static bool IsLinkVariable(Type type)
         {
+            if (type == null) return false;
+
             foreach (var propT in GetParentTypes(type))
             {
                 if (propT.IsGenericType && propT.GetGenericTypeDefinition() == typeof(LinkVariable<>))
@@ -163,6 +256,26 @@ namespace LibArchEnvGraph
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// If the given <paramref name="type"/> is an array or some other collection
+        /// comprised of 0 or more instances of a "subtype", get that type
+        /// </summary>
+        /// <param name="type">the source type</param>
+        /// <returns></returns>
+        private static Type GetEnumeratedType(Type type)
+        {
+            // provided by Array
+            var elType = type.GetElementType();
+            if (null != elType) return elType;
+
+            // otherwise provided by collection
+            var elTypes = type.GetGenericArguments();
+            if (elTypes.Length > 0) return elTypes[0];
+
+            // otherwise is not an 'enumerated' type
+            return null;
         }
 
         private static IEnumerable<Type> GetParentTypes(this Type type)

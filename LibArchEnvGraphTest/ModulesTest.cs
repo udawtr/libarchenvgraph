@@ -161,7 +161,7 @@ namespace LibArchEnvGraphTest
         }
 
         [TestMethod]
-        public void UnsteadyWall1DModuleTest()
+        public void UnsteadyWallModuleTest()
         {
             var F = new FunctionFactory();
 
@@ -206,6 +206,40 @@ namespace LibArchEnvGraphTest
             //最終的には 15[K] に収束するはず。
             Assert.AreEqual(15.0, results[0, 9999], 0.1);
             Assert.AreEqual(15.0, results[1, 9999], 0.1);
+        }
+
+        [TestMethod]
+        public void SteadyWallModuleTest()
+        {
+            var F = new FunctionFactory();
+
+            var target = new SteadyWallModule
+            {
+                S = 2.0,    //2m2
+                K = 10,     //熱貫流率 10[W/m2K]
+                a_i = 9,
+                a_o = 23,
+
+                TempIn = new[]
+                {
+                    F.Variable(40), //外気 40度
+                    F.Variable(20)  //室内 20度
+                },
+            };
+            target.Init(F);
+
+            var U = -1.0 * (40.0 - 20.0) * 2.0 * 10.0;
+            Assert.AreEqual(U, target.HeatOut[0].Get(0));
+            Assert.AreEqual(-U, target.HeatOut[1].Get(0));
+
+            target.Commit(0);
+            target.Commit(1);
+
+            //外気温と表面温度温度差から計算される熱流と壁体全体の熱流は一致
+            Assert.AreEqual(U, -1.0 * (40.0 - target.TempOut[0].Get(2)) * 2.0 * 23);
+
+            //室音と表面温度温度差から計算される熱流と壁体全体の熱流は一致
+            Assert.AreEqual(U, (20.0 - target.TempOut[1].Get(2)) * 2.0 * 9);
         }
     }
 }

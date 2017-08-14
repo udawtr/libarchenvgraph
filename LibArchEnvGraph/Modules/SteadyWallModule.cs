@@ -141,10 +141,18 @@ namespace LibArchEnvGraph.Modules
 
             var Q = F.OverallHeatTransmission(SATo, SATi, K, S);
 
-            (TempOut[0] as LinkVariable<double>).Link = Tso;
-            (TempOut[1] as LinkVariable<double>).Link = Tsi;
+            (TempOut[0] as LinkVariable<double>).Link = F.Memory(Tso);
+            (TempOut[1] as LinkVariable<double>).Link = F.Memory(Tsi);
             (HeatOut[0] as LinkVariable<double>).Link = F.Invert(Q);
             (HeatOut[1] as LinkVariable<double>).Link = Q;
+        }
+
+        public override void Commit(int t)
+        {
+            ((TempOut[0] as LinkVariable<double>).Link as IGateVariable<double>).Commit(t);
+            ((TempOut[1] as LinkVariable<double>).Link as IGateVariable<double>).Commit(t);
+
+            base.Commit(t);
         }
     }
 }
