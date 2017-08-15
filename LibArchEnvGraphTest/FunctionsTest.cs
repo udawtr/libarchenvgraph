@@ -49,16 +49,22 @@ namespace LibArchEnvGraphTest
         [TestMethod]
         public void DataInterploatorTest()
         {
-            var target = new DataInterpolator(new double[] { 0.0, 8.0}, 4);
+            var target = new DataInterpolator(new double[] { 0.0, 8.0, 12.0}, 4);
 
             Assert.AreEqual(0.0, target.Get(0));
             Assert.AreEqual(2.0, target.Get(1));
             Assert.AreEqual(4.0, target.Get(2));
             Assert.AreEqual(6.0, target.Get(3));
+
             Assert.AreEqual(8.0, target.Get(4));
-            Assert.AreEqual(6.0, target.Get(5));
-            Assert.AreEqual(4.0, target.Get(6));
-            Assert.AreEqual(2.0, target.Get(7));
+            Assert.AreEqual(9.0, target.Get(5));
+            Assert.AreEqual(10.0, target.Get(6));
+            Assert.AreEqual(11.0, target.Get(7));
+
+            Assert.AreEqual(12.0, target.Get(8));
+            Assert.AreEqual(9.0, target.Get(9));
+            Assert.AreEqual(6.0, target.Get(10));
+            Assert.AreEqual(3.0, target.Get(11));
         }
 
         [TestMethod]

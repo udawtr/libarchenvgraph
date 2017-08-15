@@ -78,13 +78,13 @@ namespace LibArchEnvGraph.Modules
         public double dt { get; set; }
 
         /// <summary>
-        /// c値(自然対流作用の程度)
+        /// 対流熱伝達率 [W/m2K]
         /// </summary>
-        public double[] c { get; set; } = new double[] { 1.98, 1.98};
+        public double[] a { get; set; } = new double[] { 23, 9};
 
         private double dx;
 
-        private NaturalConvectiveHeatTransferModule[] nv;
+        private ConvectiveHeatTransferModule[] nv;
 
         private List<HeatCapacityModule> heatCapacityModuleList;
 
@@ -131,8 +131,8 @@ namespace LibArchEnvGraph.Modules
             conductiveModuleList = new List<ConductiveHeatTransferModule>();
             nv = new[]
             {
-                new NaturalConvectiveHeatTransferModule(),
-                new NaturalConvectiveHeatTransferModule(),
+                new ConvectiveHeatTransferModule(),
+                new ConvectiveHeatTransferModule(),
             };
         }
 
@@ -177,7 +177,7 @@ namespace LibArchEnvGraph.Modules
 
             //自然換気設定
             nv[0].Label = $"表面対流熱移動1 ({Label})";
-            nv[0].cValue = c[0];
+            nv[0].alpha_c = F.Variable(a[0]);
             nv[0].S = S;
             nv[0].TempIn = new[]
             {
@@ -187,7 +187,7 @@ namespace LibArchEnvGraph.Modules
             heatCapacityModuleList[0].HeatIn.Add(nv[0].HeatOut[1]);
 
             nv[1].Label = $"表面対流熱移動2 ({Label})";
-            nv[1].cValue = c[1];
+            nv[1].alpha_c = F.Variable(a[1]);
             nv[1].S = S;
             nv[1].TempIn = new[]
             {

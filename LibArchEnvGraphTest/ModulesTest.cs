@@ -216,7 +216,7 @@ namespace LibArchEnvGraphTest
             var target = new SteadyWallModule
             {
                 S = 2.0,    //2m2
-                K = 10,     //熱貫流率 10[W/m2K]
+                K = 0.9,     //熱貫流率 0.9[W/m2K]
                 a_i = 9,
                 a_o = 23,
 
@@ -228,7 +228,7 @@ namespace LibArchEnvGraphTest
             };
             target.Init(F);
 
-            var U = -1.0 * (40.0 - 20.0) * 2.0 * 10.0;
+            var U = -1.0 * (40.0 - 20.0) * 2.0 * 0.9;
             Assert.AreEqual(U, target.HeatOut[0].Get(0));
             Assert.AreEqual(-U, target.HeatOut[1].Get(0));
 
@@ -236,10 +236,94 @@ namespace LibArchEnvGraphTest
             target.Commit(1);
 
             //外気温と表面温度温度差から計算される熱流と壁体全体の熱流は一致
-            Assert.AreEqual(U, -1.0 * (40.0 - target.TempOut[0].Get(2)) * 2.0 * 23);
+            Assert.AreEqual(U, -1.0 * (40.0 - target.TempOut[0].Get(2)) * 2.0 * 23, 0.1);
 
             //室音と表面温度温度差から計算される熱流と壁体全体の熱流は一致
-            Assert.AreEqual(U, (20.0 - target.TempOut[1].Get(2)) * 2.0 * 9);
+            Assert.AreEqual(U, (20.0 - target.TempOut[1].Get(2)) * 2.0 * 9, 0.1);
+        }
+
+        [TestMethod]
+        public void SteadyWallModuleTest2()
+        {
+            var F = new FunctionFactory();
+
+            var dt = 100;
+
+            //合計 100kJ/K の空間1,2
+            var space1 = new HeatCapacityModule
+            {
+                cro = 100,
+                V = 0.5,
+                dt = dt,
+            };
+            var space2 = new HeatCapacityModule
+            {
+                cro = 100,
+                V = 0.5,
+                dt = dt,
+            };
+
+            var target = new SteadyWallModule
+            {
+                S = 2.0,    //2m2
+                K = 0.9,     //熱貫流率 0.1[W/m2K]
+                a_i = 9,
+                a_o = 23,
+                TempIn = new[]
+                {
+                    space1.TempOut,
+                    space2.TempOut,
+                }
+            };
+
+            //1000秒間だけ 1000J/s = 1000W I面加熱する
+            target.HeatIn[0].Add(new Variable<double>(t => t < 1000 / dt ? 1000 : 0));
+
+            //1000秒間だけ 500J/s = 500W II面加熱する
+            target.HeatIn[1].Add(new Variable<double>(t => t < 1000 / dt ? 500 : 0));
+
+            space1.HeatIn.Add(target.HeatOut[0]);
+            space2.HeatIn.Add(target.HeatOut[1]);
+
+            space1.Init(F);
+            space2.Init(F);
+            target.Init(F);
+
+            var results = new double[4, 1000];
+            for (int i = 0; i < 1000; i++)
+            {
+                space1.Commit(i);
+                space2.Commit(i);
+                target.Commit(i);
+                foreach (var mem in target.TempIn.OfType<Memory>())
+                {
+                    mem.Commit(i);
+                }
+
+                results[0, i] = space1.TempOut.Get(i);
+                results[1, i] = target.TempOut[0].Get(i);
+                results[2, i] = target.TempOut[1].Get(i);
+                results[3, i] = space2.TempOut.Get(i);
+            }
+
+            //途中経過の温度順
+            //I面は1000W, II面は500Wなので、I面側のほうが熱い
+            Assert.IsTrue(results[0, 100] > results[1, 100]);
+            Assert.IsTrue(results[1, 100] > results[2, 100]);
+            Assert.IsTrue(results[2, 100] > results[3, 100]);
+
+            //最終的には 15[K] に収束するはず。
+            Assert.AreEqual(15.0, results[0, 999], 0.1);
+            Assert.AreEqual(15.0, results[1, 999], 0.1);
+
+
+            //var sb = new System.Text.StringBuilder();
+            //sb.AppendLine("To, Tso, Tsi, Tr");
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    sb.AppendLine($"{results[0, i]},{results[1, i]},{results[2, i]},{results[3, i]}");
+            //}
+            //System.IO.File.WriteAllText(@"C:\ws\test.csv", sb.ToString());
         }
     }
 }

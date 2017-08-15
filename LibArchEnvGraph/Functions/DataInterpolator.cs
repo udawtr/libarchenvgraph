@@ -34,13 +34,13 @@ namespace LibArchEnvGraph.Functions
             int off = 0;
             for (int i = 0; i < original.Length; i++)
             {
-                var dataPrev = i > 0 ? original[i - 1] : original.Last();
+                var dataNext = i >= original.Length - 1 ? original[0] : original[i + 1];
                 var data = original[i];
 
                 for (int j = 0; j < scaleFactor; j++, off++)
                 {
-                    double alpha = (scaleFactor - (double)j) / scaleFactor;
-                    this.data[off] = (1.0 - alpha) * (data) + alpha * (dataPrev);
+                    double alpha =  ((double)j) / scaleFactor;
+                    this.data[off] = (1.0 - alpha) * (data) + alpha * (dataNext);
                 }
             }
         }

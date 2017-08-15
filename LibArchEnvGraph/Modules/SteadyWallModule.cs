@@ -129,8 +129,8 @@ namespace LibArchEnvGraph.Modules
             var SATo = F.Function(t => TempIn[0].Get(t) + Qin0.Get(t) / a_o / S);
             var SATi = F.Function(t => TempIn[1].Get(t) + Qin1.Get(t) / a_i / S);
 
-            var Tso = F.Function(t => TempIn[0].Get(t) - (TempIn[0].Get(t) - TempIn[1].Get(t)) * (K / a_o));
-            var Tsi = F.Function(t => TempIn[1].Get(t) + (TempIn[0].Get(t) - TempIn[1].Get(t)) * (K / a_i));
+            var Tso = F.Function(t => SATo.Get(t) - (SATo.Get(t) - SATi.Get(t)) * (K / a_o));
+            var Tsi = F.Function(t => SATi.Get(t) + (SATo.Get(t) - SATi.Get(t)) * (K / a_i));
 
             var Q = F.OverallHeatTransmission(SATo, SATi, K, S);
 

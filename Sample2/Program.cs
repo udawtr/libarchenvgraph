@@ -37,7 +37,7 @@ namespace Sample2
             {
                 TickSecond = 60,
                 BeginDay = 0,
-                TotalDays = 10,
+                TotalDays = 3,
 
                 OutsideTemperatureFilename = "s47772_201.csv",
                 SolarRadiationFilename = "s47772_610.csv",
@@ -46,20 +46,20 @@ namespace Sample2
                 Lat= 34.68639,
 
                 UseSAT = false,
-                UseWallSteady = true,
+                UseWallSteady = false,
 
                 House = new House
                 {
                     Rooms = new List<Room> {
-                        new Room{ Name = "部屋1", cro = HeatCapacityModule.croAir, V = 10.0, }
+                        new Room{ Name = "部屋1", cro = HeatCapacityModule.croAir, V = 100.0, }
                     },
                     Walls = new List<Wall>
                     {
-                        new Wall { Name = "南壁", r = 0.91, Rambda = 0.213, cro = 854, depth = 0.05, S= 2.0, TiltAngle = 90, AzimuthAngle = 00 },
-                        new Wall { Name = "南窓", r = 0.91, Rambda = 0.776, cro = 2022, depth= 0.05, S= 2.0, IsOpen = true, TiltAngle = 90, AzimuthAngle = 0, GroundReturnRate = 0.2, SolarThroughRate = 0.9 },
-                        new Wall { Name = "西壁", r = 0.91, Rambda = 0.213, cro = 854, depth = 0.05, S= 6.0, TiltAngle = 00, AzimuthAngle = 90, IsCeiling = true },
-                        new Wall { Name = "東壁", r = 0.91, Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = 180 },
-                        new Wall { Name = "北壁", r = 0.91, Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = -90},
+                        new Wall { Name = "南壁", a1=23, a2=9, Rambda = 0.213, cro = 854, depth = 0.05, S= 2.0, TiltAngle = 90, AzimuthAngle = 00 },
+                        new Wall { Name = "南窓", Rambda = 0.776, cro = 2022, depth= 0.05, S= 2.0, IsOpen = true, TiltAngle = 90, AzimuthAngle = 0, GroundReturnRate = 0.2, SolarThroughRate = 0.9 },
+                        new Wall { Name = "西壁", a1=23, a2=9, Rambda = 0.213, cro = 854, depth = 0.05, S= 6.0, TiltAngle = 00, AzimuthAngle = 90, IsCeiling = true },
+                        new Wall { Name = "東壁", a1=23, a2=9, Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = 180 },
+                        new Wall { Name = "北壁", a1=23, a2=9, Rambda = 0.213, cro = 854, depth = 0.05, S= 5.0, TiltAngle = 90, AzimuthAngle = -90},
                     }
                 }
             };

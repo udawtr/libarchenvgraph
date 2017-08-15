@@ -106,7 +106,7 @@ namespace LibArchEnvGraph
             {
                 G.Commit(i);
 
-                Console.WriteLine($"{t}, {OutsideTemperature.Get(t)}\t{SolarRadiation.Get(t)}\t{House.OuterSurfaces[0].Temperature.Get(t)}\t{House.Rooms[0].Walls[0].Temperature.Get(t)}\t{House.Rooms[0].RoomTemperature.Get(t)}");
+                Console.WriteLine($"{t}, {OutsideTemperature.Get(t)},{SolarRadiation.Get(t)},{House.OuterSurfaces[0].Temperature.Get(t)},{House.Rooms[0].Walls[0].Temperature.Get(t)},{House.Rooms[0].RoomTemperature.Get(t)}");
             }
         }
 
@@ -136,7 +136,7 @@ namespace LibArchEnvGraph
             if (UseWallSteady)
             {
                 //熱貫流率 [W/m2K]
-                var K = 1.0 / (1.0 / wall.a1 + 1.0 / wall.a2 + wall.r);
+                var K = 1.0 / (1.0 / wall.a1 + 1.0 / wall.a2 + wall.depth / wall.Rambda);
 
                 return new SteadyWallModule()
                 {
@@ -177,11 +177,11 @@ namespace LibArchEnvGraph
                     //層分割数
                     n_slice = 5,
 
-                    //自然対流作用の程度
-                    c = new[]
+                    //対流熱伝達
+                    a = new[]
                     {
-                        NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
-                        NaturalConvectiveHeatTransferRate.cValueVerticalWallSurface,
+                        wall.a1,
+                        wall.a2
                     }
                 };
             }
@@ -304,24 +304,31 @@ namespace LibArchEnvGraph
 
                         //TODO: まじめの分配率の計算をする
 
-                        var h = F.Split(sumQGT, wall.S, 0.25);
+                        var h = F.Split(sumQGT, wall.S, 1.0 / Nw);
                         h.Label = $"分配日射({wall.Name})[W]";
 
                         //分配された日射を壁に入れる
                         wallModule.HeatIn[s].Add(h);
                     }
 
-                    //相互放射の接続
-                    //  +--------+                     +-------+
-                    //  |        +-温度in <--- 温度out-+       |
-                    /// | 放射M  |                     | 壁体M |
-                    //  |        +-放射out -----> 熱in-+       |
-                    //  +--------+                     +-------+
-                    MR.TempIn[i] = wallModule.TempOut[s];
-                    wallModule.HeatIn[s].Add(MR.HeatOut[i]);
+                    if (UseWallSteady == false)
+                    {
+
+                        //相互放射の接続
+                        //  +--------+                     +-------+
+                        //  |        +-温度in <--- 温度out-+       |
+                        /// | 放射M  |                     | 壁体M |
+                        //  |        +-放射out -----> 熱in-+       |
+                        //  +--------+                     +-------+
+                        MR.TempIn[i] = wallModule.TempOut[s];
+                        wallModule.HeatIn[s].Add(MR.HeatOut[i]);
+                    }
                 }
 
-                container.Modules.Add(MR);
+                if (UseWallSteady == false)
+                {
+                    container.Modules.Add(MR);
+                }
 
                 #region 室内の対流熱移動
                 for (int i = 0; i < Nw; i++)

@@ -150,6 +150,8 @@ namespace LibArchEnvGraph.Modules
                     As = Math.Sign(t) * Math.Acos(cosA);
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[{tick}] SolarPositionModule: hs={hs}, As={As}");
+
                 return new SolarPositionData
                 {
                     SolarElevationAngle = hs * 180 / Math.PI,

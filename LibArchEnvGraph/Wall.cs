@@ -17,11 +17,6 @@ namespace LibArchEnvGraph
         #region 定常計算用プロパティ
 
         /// <summary>
-        /// 熱伝導抵抗 [m2K/W]
-        /// </summary>
-        public double r { get; set; }
-
-        /// <summary>
         /// 室外側熱伝達率 [W/m2K]
         /// </summary>
         public double a1 { get; set; } = 23;

@@ -46,10 +46,10 @@ namespace LibArchEnvGraph.Functions
             double QGT_in = HeatIn.Get(n);
 
             //i室の部位kの表面積 [m2]
-            double A_ik = S;
+            //double A_ik = S;
 
             //吸収日射量[W/m2]
-            double Sol_ikn = (fsol * QGT_in) / A_ik;
+            double Sol_ikn = (fsol * QGT_in);
 
             return Sol_ikn;
         }
