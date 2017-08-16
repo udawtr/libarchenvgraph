@@ -1,0 +1,12 @@
+version: 0.1.build}
+image: Visual Studio 2015
+configuration:
+- Debug
+- Release
+shallow_clone: true
+before_build:
+- cmd: nuget restore
+build:
+  publish_nuget: true
+  include_nuget_references: true
+  verbosity: minimal
