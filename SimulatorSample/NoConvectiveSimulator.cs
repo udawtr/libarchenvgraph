@@ -150,7 +150,6 @@ namespace SimulatorSample
                     Depth = wall.Depth,
                     TickSecond = this.TickSecond,
                     Lambda = wall.Lambda,
-                    SliceCount = 2,
                     S = wall.S,
                 };
             }
@@ -172,11 +171,6 @@ namespace SimulatorSample
             public double Cro { get; set; }
 
             /// <summary>
-            /// 分割数
-            /// </summary>
-            public int SliceCount { get; set; } = 2;
-
-            /// <summary>
             /// 表面積 [m2]
             /// </summary>
             public double S { get; set; }
@@ -190,13 +184,6 @@ namespace SimulatorSample
             /// 単位時間 [s]
             /// </summary>
             public double TickSecond { get; set; }
-
-            private double dx;
-
-
-            private List<HeatCapacityModule> heatCapacityModuleList;
-
-            private List<ConductiveHeatTransferModule> conductiveModuleList;
 
             /// <summary>
             /// 入力流体温度 [K]
@@ -235,16 +222,16 @@ namespace SimulatorSample
             {
                 Label = "対流なし壁体M";
 
-                heatCapacityModuleList = new List<HeatCapacityModule>();
-                conductiveModuleList = new List<ConductiveHeatTransferModule>();
             }
 
             public override void Init(FunctionFactory F)
             {
-                dx = Depth / SliceCount;
+                //層の厚さ [m]
+                var dx = Depth / 2;
 
                 //層壁体の作成
-                for (int i = 0; i < SliceCount; i++)
+                var heatCapacityModuleList = new List<HeatCapacityModule>();
+                for (int i = 0; i < 2; i++)
                 {
                     heatCapacityModuleList.Add(new HeatCapacityModule
                     {
@@ -256,31 +243,28 @@ namespace SimulatorSample
                 }
 
                 //層壁体間の熱伝導の作成
-                for (int i = 0; i < SliceCount - 1; i++)
+                var conductiveM = new ConductiveHeatTransferModule
                 {
-                    conductiveModuleList.Add(new ConductiveHeatTransferModule
-                    {
-                        dx = dx,            //層の中心間の距離 [m]
-                        Lambda = Lambda,    //熱伝導率
-                        S = S,              //表面積[m2]
-                        Label = $"層壁体{i + 1}<=>{i + 2}間の熱伝導 ({Label})"
-                    });
+                    dx = dx,            //層の中心間の距離 [m]
+                    Lambda = Lambda,    //熱伝導率
+                    S = S,              //表面積[m2]
+                    Label = $"層壁体1<=>2間の熱伝導 ({Label})"
+                };
 
-                    heatCapacityModuleList[i].HeatIn.Add(conductiveModuleList[i].HeatOut[0]);
-                    heatCapacityModuleList[i + 1].HeatIn.Add(conductiveModuleList[i].HeatOut[1]);
+                heatCapacityModuleList[0].HeatIn.Add(conductiveM.HeatOut[0]);
+                heatCapacityModuleList[1].HeatIn.Add(conductiveM.HeatOut[1]);
 
-                    conductiveModuleList[i].TempIn[0] = heatCapacityModuleList[i].TempOut;
-                    conductiveModuleList[i].TempIn[1] = heatCapacityModuleList[i + 1].TempOut;
-                }
+                conductiveM.TempIn[0] = heatCapacityModuleList[0].TempOut;
+                conductiveM.TempIn[1] = heatCapacityModuleList[1].TempOut;
 
                 //室外側・室内側層壁体への外部からの熱移動
                 heatCapacityModuleList[0].HeatIn.Add(F.Concat(HeatIn[0]));
-                heatCapacityModuleList[SliceCount - 1].HeatIn.Add(F.Concat(HeatIn[1]));
+                heatCapacityModuleList[1].HeatIn.Add(F.Concat(HeatIn[1]));
 
 
                 //出力変数の登録
                 (TempOut[0] as LinkVariable<double>).Link = heatCapacityModuleList[0].TempOut;  //室外側表面温度
-                (TempOut[1] as LinkVariable<double>).Link = heatCapacityModuleList[SliceCount - 1].TempOut;    //室内側表面温度
+                (TempOut[1] as LinkVariable<double>).Link = heatCapacityModuleList[1].TempOut;    //室内側表面温度
                 (HeatOut[0] as LinkVariable<double>).Link = F.Constant(0);
                 (HeatOut[1] as LinkVariable<double>).Link = F.Constant(0);
 
@@ -291,7 +275,7 @@ namespace SimulatorSample
 
                 //内部モジュールの登録
                 Modules.AddRange(heatCapacityModuleList);
-                Modules.AddRange(conductiveModuleList);
+                Modules.Add(conductiveM);
 
                 //初期化
                 base.Init(F);

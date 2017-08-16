@@ -22,24 +22,24 @@ namespace LibArchEnvGraph.Modules
     ///               |          |
     ///               +----+-----+
     ///                    |
-    ///            depth --+
-    ///              cro --+
-    ///          n_slice --+
+    ///            Depth --+
+    ///              Cro --+
+    ///       SliceCount --+
     ///                S --+
-    ///           Rambda --+
-    ///                c --+
-    ///               dt --+
+    ///           Lambda --+
+    ///                A --+
+    ///       TickSecond --+
     /// 
     /// 入力:
-    /// - 奥行 depth [m]
-    /// - 容積比熱 cro [kJ/m^3・K]
-    /// - 分割数 n_slice [個]
+    /// - 奥行 Depth [m]
+    /// - 容積比熱 Cro [kJ/m^3・K]
+    /// - 分割数 SliceCount [個]
     /// - 表面積 S [m2]
-    /// - 熱伝導率 Rambda [W/mK]
+    /// - 熱伝導率 Lambda [W/mK]
     /// - 室外側／室内側入力温度 TempIn [K]
     /// - 室外側／室内側入力熱量 HeatIn [W]
-    /// - 単位時間 dt [s]
-    /// - c値 c [-]
+    /// - 単位時間 TickSecond [s]
+    /// - 対流熱伝達率 A [W/m2K]
     /// 
     /// 出力:
     /// - 室外側／室内側出力温度 TempOut [K]
@@ -80,15 +80,7 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 対流熱伝達率 [W/m2K]
         /// </summary>
-        public double[] a { get; set; } = new double[] { 23, 9};
-
-        private double dx;
-
-        private ConvectiveHeatTransferModule[] nv;
-
-        private List<HeatCapacityModule> heatCapacityModuleList;
-
-        private List<ConductiveHeatTransferModule> conductiveModuleList;
+        public double[] A { get; set; } = new double[] { 23, 9};
 
         /// <summary>
         /// 入力流体温度 [K]
@@ -126,21 +118,15 @@ namespace LibArchEnvGraph.Modules
         public UnsteadyWallModule()
         {
             Label = "非定常1次元壁体M";
-
-            heatCapacityModuleList = new List<HeatCapacityModule>();
-            conductiveModuleList = new List<ConductiveHeatTransferModule>();
-            nv = new[]
-            {
-                new ConvectiveHeatTransferModule(),
-                new ConvectiveHeatTransferModule(),
-            };
         }
 
         public override void Init(FunctionFactory F)
         {
-            dx = Depth / SliceCount;
+            //層の厚さ[m]
+            var dx = Depth / SliceCount;
 
             //層壁体の作成
+            var heatCapacityModuleList = new List<HeatCapacityModule>();
             for (int i = 0; i < SliceCount; i++)
             {
                 heatCapacityModuleList.Add(new HeatCapacityModule
@@ -153,6 +139,7 @@ namespace LibArchEnvGraph.Modules
             }
 
             //層壁体間の熱伝導の作成
+            var conductiveModuleList = new List<ConductiveHeatTransferModule>();
             for (int i = 0; i < SliceCount - 1; i++)
             {
                 conductiveModuleList.Add(new ConductiveHeatTransferModule
@@ -176,8 +163,13 @@ namespace LibArchEnvGraph.Modules
 
 
             //自然換気設定
+            var nv = new[]
+            {
+                new ConvectiveHeatTransferModule(),
+                new ConvectiveHeatTransferModule(),
+            };
             nv[0].Label = $"表面対流熱移動1 ({Label})";
-            nv[0].alpha_c = F.Constant(a[0]);
+            nv[0].alpha_c = F.Constant(A[0]);
             nv[0].S = S;
             nv[0].TempIn = new[]
             {
@@ -187,7 +179,7 @@ namespace LibArchEnvGraph.Modules
             heatCapacityModuleList[0].HeatIn.Add(nv[0].HeatOut[1]);
 
             nv[1].Label = $"表面対流熱移動2 ({Label})";
-            nv[1].alpha_c = F.Constant(a[1]);
+            nv[1].alpha_c = F.Constant(A[1]);
             nv[1].S = S;
             nv[1].TempIn = new[]
             {

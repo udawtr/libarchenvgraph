@@ -183,7 +183,7 @@ namespace LibArchEnvGraph
                     SliceCount = 5,
 
                     //対流熱伝達
-                    a = new[]
+                    A = new[]
                     {
                         wall.A1,
                         wall.A2
