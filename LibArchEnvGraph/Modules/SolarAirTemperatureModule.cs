@@ -129,7 +129,7 @@ namespace LibArchEnvGraph.Modules
             var J_t = F.Concat(J_dt, J_st, J_rt);
 
             //実効放射
-            var J_e = F.Brunt(TiltAngle * Math.PI / 180, TempIn, F.Variable(4.28), F.Variable(0.8), F.Variable(1));
+            var J_e = F.Brunt(TiltAngle * Math.PI / 180, TempIn, F.Constant(4.28), F.Constant(0.8), F.Constant(1));
             var SAT = F.SAT(To: TempIn, J: J_t, J_e: J_e);
 
             //リンク設定

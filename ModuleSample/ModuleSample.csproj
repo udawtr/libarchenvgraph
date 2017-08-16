@@ -7,8 +7,8 @@
     <ProjectGuid>{249D4E9C-C7F2-41E4-8BB7-12E2464BAAB3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sample1</RootNamespace>
-    <AssemblyName>Sample1</AssemblyName>
+    <RootNamespace>ModuleSample</RootNamespace>
+    <AssemblyName>ModuleSample</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NaturalConvectiveHeatTransferSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

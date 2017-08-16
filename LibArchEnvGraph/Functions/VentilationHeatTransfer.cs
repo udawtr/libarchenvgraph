@@ -14,7 +14,7 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 流体(空気)容積比熱 [kJ/m3K]
         /// </summary>
-        public double cro { get; set; } = 1.007 * 1.024;
+        public double Cro { get; set; } = 1.007 * 1.024;
 
         /// <summary>
         /// 固体(壁体)の表面温度 [K]
@@ -33,7 +33,7 @@ namespace LibArchEnvGraph.Functions
 
         public override double Update(int t)
         {
-            var dU = cro * V * (T1.Get(t) - T2.Get(t));
+            var dU = Cro * V * (T1.Get(t) - T2.Get(t));
             return dU;
         }
     }

@@ -139,7 +139,7 @@ namespace LibArchEnvGraphTest
         public void HeatToTempTest()
         {
             HeatToTemp T = new HeatToTemp();
-            T.cro = 1234;   // kJ/m3K
+            T.Cro = 1234;   // kJ/m3K
             T.V = 567;      //m3
             T.Heat = new Variable<double>(100);
 

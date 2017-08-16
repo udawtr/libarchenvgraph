@@ -20,7 +20,7 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 容積比熱 cρ [kJ/m^3・K]
         /// </summary>
-        public double cro { get; set; }
+        public double Cro { get; set; }
 
         /// <summary>
         /// 容積[m^3]

@@ -45,12 +45,12 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 容積比熱 cρ [kJ/m^3・K]
         /// </summary>
-        public double cro { get; set; }
+        public double Cro { get; set; }
 
         /// <summary>
         /// 単位時間 [s]
         /// </summary>
-        public double dt { get; set; } = 1.0;
+        public double TickSecond { get; set; } = 1.0;
 
         /// <summary>
         /// 温度 [K]
@@ -73,11 +73,11 @@ namespace LibArchEnvGraph.Modules
         public override void Init(FunctionFactory F)
         {
             //熱流を合算し、dtを掛ける
-            var _sumQ = F.Multiply(dt, F.Concat(HeatIn));
+            var _sumQ = F.Multiply(TickSecond, F.Concat(HeatIn));
             _sumQ.Label = $"入力熱量 [J] ({Label})";
 
             //温度差分 [K]
-            var _dT = F.Temperature(cro, V, _sumQ);
+            var _dT = F.Temperature(Cro, V, _sumQ);
             _dT.Label = $"温度差分 [K] ({Label})";
 
             //記録している温度に温度差分を加える

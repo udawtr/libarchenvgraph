@@ -14,7 +14,7 @@ namespace LibArchEnvGraphTest
         {
             var F = new FunctionFactory();
 
-            var q = F.Oppenheim(F.Variable(20 + 273.15), F.Variable(15 + 273.15), 1.0, 0.9, 0.9).Get(0);
+            var q = F.Oppenheim(F.Constant(20 + 273.15), F.Constant(15 + 273.15), 1.0, 0.9, 0.9).Get(0);
 
             Assert.AreEqual(22.8, q, 0.1);
         }
@@ -47,7 +47,7 @@ namespace LibArchEnvGraphTest
 
 
             //F.HeatTransmission
-            var q = F.OverallHeatTransmission(F.Variable(20), F.Variable(0), 0.91, 6);
+            var q = F.OverallHeatTransmission(F.Constant(20), F.Constant(0), 0.91, 6);
             Assert.AreEqual(109.2, q.Get(0), 0.1);
 
             //HeatTransmissionModule
@@ -56,8 +56,8 @@ namespace LibArchEnvGraphTest
                 K = 0.91,
                 S = 6,
                 TempIn = new IVariable<double>[] {
-                    F.Variable(20),
-                    F.Variable(0)
+                    F.Constant(20),
+                    F.Constant(0)
                 }
             };
             wall.Init(F);
@@ -91,9 +91,9 @@ namespace LibArchEnvGraphTest
             var alpha_o = 23;   //外側熱伝達率 [W/m2K]
             var eps = 0.9;      //長波長放射率 [-]
 
-            var Te = F.SAT(F.Variable(0), F.Variable(600), F.Variable(100), a_s, eps, alpha_o);
-            var SAT = F.SAT(F.Variable(32), F.Variable(600), F.Variable(100), a_s, eps, alpha_o);
-            var q = F.OverallHeatTransmission(SAT, F.Variable(25), 2.0, 1.0);
+            var Te = F.SAT(F.Constant(0), F.Constant(600), F.Constant(100), a_s, eps, alpha_o);
+            var SAT = F.SAT(F.Constant(32), F.Constant(600), F.Constant(100), a_s, eps, alpha_o);
+            var q = F.OverallHeatTransmission(SAT, F.Constant(25), 2.0, 1.0);
 
             Assert.AreEqual(14.3, Te.Get(0), 0.1);
             Assert.AreEqual(46.3, SAT.Get(0), 0.1);

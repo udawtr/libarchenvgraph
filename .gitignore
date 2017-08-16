@@ -5,3 +5,4 @@
 *.suo
 .vs/
 .ipynb_checkpoints
+packages/

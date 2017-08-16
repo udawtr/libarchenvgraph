@@ -18,7 +18,7 @@ namespace LibArchEnvGraphTest
             //容積比熱 1000 kJ/m3K, 容積 0.1m3
             var target = new HeatCapacityModule
             {
-                cro = 1000.0,
+                Cro = 1000.0,
                 V = 0.1,
             };
 
@@ -64,7 +64,7 @@ namespace LibArchEnvGraphTest
             //外気 10度, 壁 0度
             var target = new ConvectiveHeatTransferModule
             {
-                alpha_c = F.Variable(2),
+                alpha_c = F.Constant(2),
                 S = 2.0,    //2.0m2
                 TempIn = new[]
                 {
@@ -128,8 +128,8 @@ namespace LibArchEnvGraphTest
             var wall = new HeatCapacityModule
             {
                 V = 0.1,
-                cro = 1000,
-                dt = 60 * 60,
+                Cro = 1000,
+                TickSecond = 60 * 60,
             };
 
             var wind = new NaturalConvectiveHeatTransferModule
@@ -167,12 +167,12 @@ namespace LibArchEnvGraphTest
 
             var target = new UnsteadyWallModule
             {
-                cro = 1000.0,
+                Cro = 1000.0,
                 S = 2.0,    //2m2
-                depth = 0.05,   //5cm
-                n_slice = 5,    //スライス数=5
-                Rambda = 0.2,    //熱伝導率 0.2 W/mK
-                dt = 1,    //10秒
+                Depth = 0.05,   //5cm
+                SliceCount = 5,    //スライス数=5
+                Lambda = 0.2,    //熱伝導率 0.2 W/mK
+                TickSecond = 1,    //10秒
             };
 
             //壁体表面温度と流体温度を同じにする
@@ -222,8 +222,8 @@ namespace LibArchEnvGraphTest
 
                 TempIn = new[]
                 {
-                    F.Variable(40), //外気 40度
-                    F.Variable(20)  //室内 20度
+                    F.Constant(40), //外気 40度
+                    F.Constant(20)  //室内 20度
                 },
             };
             target.Init(F);
@@ -252,15 +252,15 @@ namespace LibArchEnvGraphTest
             //合計 100kJ/K の空間1,2
             var space1 = new HeatCapacityModule
             {
-                cro = 100,
+                Cro = 100,
                 V = 0.5,
-                dt = dt,
+                TickSecond = dt,
             };
             var space2 = new HeatCapacityModule
             {
-                cro = 100,
+                Cro = 100,
                 V = 0.5,
-                dt = dt,
+                TickSecond = dt,
             };
 
             var target = new SteadyWallModule

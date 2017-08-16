@@ -12,6 +12,11 @@ namespace LibArchEnvGraph
     public class WallSurface
     {
         /// <summary>
+        /// 壁の名前
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// 壁体
         /// </summary>
         public Wall Wall { get; set; }

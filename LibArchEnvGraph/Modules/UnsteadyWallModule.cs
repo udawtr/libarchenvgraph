@@ -50,17 +50,17 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 奥行 [m]
         /// </summary>
-        public double depth { get; set; }
+        public double Depth { get; set; }
 
         /// <summary>
         /// 容積比熱 cρ [kJ/m^3・K]
         /// </summary>
-        public double cro { get; set; }
+        public double Cro { get; set; }
 
         /// <summary>
         /// 分割数
         /// </summary>
-        public int n_slice { get; set; } = 2;
+        public int SliceCount { get; set; } = 2;
 
         /// <summary>
         /// 表面積 [m2]
@@ -70,12 +70,12 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 熱伝導率 [W/mK]
         /// </summary>
-        public double Rambda { get; set; }
+        public double Lambda { get; set; }
 
         /// <summary>
         /// 単位時間 [s]
         /// </summary>
-        public double dt { get; set; }
+        public double TickSecond { get; set; }
 
         /// <summary>
         /// 対流熱伝達率 [W/m2K]
@@ -138,27 +138,27 @@ namespace LibArchEnvGraph.Modules
 
         public override void Init(FunctionFactory F)
         {
-            dx = depth / n_slice;
+            dx = Depth / SliceCount;
 
             //層壁体の作成
-            for (int i = 0; i < n_slice; i++)
+            for (int i = 0; i < SliceCount; i++)
             {
                 heatCapacityModuleList.Add(new HeatCapacityModule
                 {
-                    cro = cro,          //容積比熱
+                    Cro = Cro,          //容積比熱
                     V = dx * S,         //容積
-                    dt = dt,
+                    TickSecond = TickSecond,
                     Label = $"層壁体{i+1}({Label})"
                 });
             }
 
             //層壁体間の熱伝導の作成
-            for (int i = 0; i < n_slice - 1; i++)
+            for (int i = 0; i < SliceCount - 1; i++)
             {
                 conductiveModuleList.Add(new ConductiveHeatTransferModule
                 {
                     dx = dx,            //層の中心間の距離 [m]
-                    Lambda = Rambda,    //熱伝導率
+                    Lambda = Lambda,    //熱伝導率
                     S = S,              //表面積[m2]
                     Label = $"層壁体{i+1}<=>{i+2}間の熱伝導 ({Label})"
                 });
@@ -172,12 +172,12 @@ namespace LibArchEnvGraph.Modules
 
             //室外側・室内側層壁体への外部からの熱移動
             heatCapacityModuleList[0].HeatIn.Add(F.Concat(HeatIn[0]));
-            heatCapacityModuleList[n_slice - 1].HeatIn.Add(F.Concat(HeatIn[1]));
+            heatCapacityModuleList[SliceCount - 1].HeatIn.Add(F.Concat(HeatIn[1]));
 
 
             //自然換気設定
             nv[0].Label = $"表面対流熱移動1 ({Label})";
-            nv[0].alpha_c = F.Variable(a[0]);
+            nv[0].alpha_c = F.Constant(a[0]);
             nv[0].S = S;
             nv[0].TempIn = new[]
             {
@@ -187,18 +187,18 @@ namespace LibArchEnvGraph.Modules
             heatCapacityModuleList[0].HeatIn.Add(nv[0].HeatOut[1]);
 
             nv[1].Label = $"表面対流熱移動2 ({Label})";
-            nv[1].alpha_c = F.Variable(a[1]);
+            nv[1].alpha_c = F.Constant(a[1]);
             nv[1].S = S;
             nv[1].TempIn = new[]
             {
-                heatCapacityModuleList[n_slice - 1].TempOut,    //室内側表面温度(室内側層壁体温度)
+                heatCapacityModuleList[SliceCount - 1].TempOut,    //室内側表面温度(室内側層壁体温度)
                 this.TempIn[1]  //室内温度
             };
-            heatCapacityModuleList[n_slice - 1].HeatIn.Add(nv[1].HeatOut[0]);
+            heatCapacityModuleList[SliceCount - 1].HeatIn.Add(nv[1].HeatOut[0]);
 
             //出力変数の登録
             (TempOut[0] as LinkVariable<double>).Link = heatCapacityModuleList[0].TempOut;  //室外側表面温度
-            (TempOut[1] as LinkVariable<double>).Link = heatCapacityModuleList[n_slice - 1].TempOut;    //室内側表面温度
+            (TempOut[1] as LinkVariable<double>).Link = heatCapacityModuleList[SliceCount - 1].TempOut;    //室内側表面温度
             (HeatOut[0] as LinkVariable<double>).Link = nv[0].HeatOut[0];   //室外への熱移動
             (HeatOut[1] as LinkVariable<double>).Link = nv[1].HeatOut[1];   //室内への熱移動
 

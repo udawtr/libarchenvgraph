@@ -19,7 +19,7 @@ namespace LibArchEnvGraph.Functions
         /// <summary>
         /// 容積比熱 cρ [kJ/m^3・K]
         /// </summary>
-        public double cro { get; set; }
+        public double Cro { get; set; }
 
         /// <summary>
         /// 熱量 [J]
@@ -28,7 +28,7 @@ namespace LibArchEnvGraph.Functions
 
         public override double Update(int t)
         {
-            var C = cro * 1000 * V;
+            var C = Cro * 1000 * V;
             var T = Heat.Get(t) / C;
 
             return T;

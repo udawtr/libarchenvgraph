@@ -86,9 +86,14 @@ namespace LibArchEnvGraph
 
         #region ユーティリティ
 
-        public virtual IVariable<double> Variable(double c)
+        public virtual IVariable<double> Constant(double c)
         {
             return new Variable<double>(c);
+        }
+
+        public virtual IVariable<double> Constant(params double[] c)
+        {
+            return new DataVariable<double>(c);
         }
 
         public virtual IVariable<double> Function(Func<int,double> func)
@@ -137,7 +142,7 @@ namespace LibArchEnvGraph
         {
             return new Functions.HeatToTemp
             {
-                cro = cro,
+                Cro = cro,
                 V = V,
                 Heat = heat
             };
@@ -155,7 +160,7 @@ namespace LibArchEnvGraph
         {
             return new Functions.VentilationHeatTransfer
             {
-                cro = cro,
+                Cro = cro,
                 T1 = T1,
                 T2 = T2,
                 V = V,

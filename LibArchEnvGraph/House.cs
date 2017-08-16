@@ -27,5 +27,45 @@ namespace LibArchEnvGraph
         /// 外壁面一覧
         /// </summary>
         public List<WallSurface> OuterSurfaces { get; set; }
+
+        /// <summary>
+        /// 外気温 [度]
+        /// </summary>
+        public IVariable<double> OutsideTemperature { get; set; }
+
+        /// <summary>
+        /// 日射量 [W]
+        /// </summary>
+        public IVariable<double> SolarRadiation { get; set; }
+
+
+        private void ResolveReference(WallSurface wallSurface)
+        {
+            if (wallSurface.Wall == null && !String.IsNullOrEmpty(wallSurface.Name))
+            {
+                wallSurface.Wall = GetWall(wallSurface.Name);
+            }
+        }
+
+        public void ResolveReference()
+        {
+            foreach (var room in Rooms)
+            {
+                foreach (var wallSurface in room.Walls)
+                {
+                    ResolveReference(wallSurface);
+                }
+            }
+
+            foreach (var wallSurface in OuterSurfaces)
+            {
+                ResolveReference(wallSurface);
+            }
+        }
+
+        public Wall GetWall(string name)
+        {
+            return Walls.SingleOrDefault(x => x.Name == name);
+        }
     }
 }

@@ -47,7 +47,7 @@ namespace LibArchEnvGraph.Modules
         /// <summary>
         /// 流体(空気)容積比熱 [kJ/m3K]
         /// </summary>
-        public double cro { get; set; } = 1.007 * 1.024;
+        public double Cro { get; set; } = 1.007 * 1.024;
 
         /// <summary>
         /// 流体(空気)の容積 [m3]
@@ -57,10 +57,10 @@ namespace LibArchEnvGraph.Modules
 
         public override void Init(FunctionFactory F)
         {
-            if (cro <= 0.0) throw new InvalidOperationException("容積比熱を設定してください。");
+            if (Cro <= 0.0) throw new InvalidOperationException("容積比熱を設定してください。");
             if (V <= 0.0) throw new InvalidOperationException("容積を設定してください。");
 
-            var baseFunction = F.VentilationHeatTransfer(V, TempIn[0], TempIn[1], cro);
+            var baseFunction = F.VentilationHeatTransfer(V, TempIn[0], TempIn[1], Cro);
 
             (HeatOut[0] as LinkVariable<double>).Link = new Functions.Invert(baseFunction);
             (HeatOut[1] as LinkVariable<double>).Link = baseFunction;

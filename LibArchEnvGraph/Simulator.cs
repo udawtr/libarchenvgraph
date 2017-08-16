@@ -2,6 +2,7 @@
 using LibArchEnvGraph.Modules;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,17 +53,11 @@ namespace LibArchEnvGraph
 
         public House House { get; set; }
 
+        public TextWriter Out { get; set; } = Console.Out;
+
+        public Action<TextWriter, House,int> Log { get; set; }
+
         public FunctionFactory FunctionFactory { get; set; } = FunctionFactory.Default;
-
-        /// <summary>
-        /// 外気温 [度]
-        /// </summary>
-        public IVariable<double> OutsideTemperature { get; private set; }
-
-        /// <summary>
-        /// 日射量 [W]
-        /// </summary>
-        public IVariable<double> SolarRadiation { get; private set; }
 
         #region 計算グラフ作成オプション
 
@@ -82,9 +77,16 @@ namespace LibArchEnvGraph
 
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Run()
         {
             var F = FunctionFactory;
+
+
+            //参照の解決
+            House.ResolveReference();
 
             var G = Build();
 
@@ -106,7 +108,10 @@ namespace LibArchEnvGraph
             {
                 G.Commit(i);
 
-                Console.WriteLine($"{t}, {OutsideTemperature.Get(t)},{SolarRadiation.Get(t)},{House.OuterSurfaces[0].Temperature.Get(t)},{House.Rooms[0].Walls[0].Temperature.Get(t)},{House.Rooms[0].RoomTemperature.Get(t)}");
+                if (Log != null)
+                {
+                    Log(Out, House, t);
+                }
             }
         }
 
@@ -120,9 +125,9 @@ namespace LibArchEnvGraph
             {
                 Label = $"熱容量M({room.Name})",
 
-                cro = room.cro,
+                Cro = room.Cro,
                 V = room.V,
-                dt = TickSecond,
+                TickSecond = TickSecond,
             };
 
             return roomModule;
@@ -136,7 +141,7 @@ namespace LibArchEnvGraph
             if (UseWallSteady)
             {
                 //熱貫流率 [W/m2K]
-                var K = 1.0 / (1.0 / wall.a1 + 1.0 / wall.a2 + wall.depth / wall.Rambda);
+                var K = 1.0 / (1.0 / wall.A1 + 1.0 / wall.A2 + wall.Depth / wall.Lambda);
 
                 return new SteadyWallModule()
                 {
@@ -149,8 +154,8 @@ namespace LibArchEnvGraph
                     K = K,
 
                     //表面熱伝達率 [W/m2K]
-                    a_o = wall.a1,
-                    a_i = wall.a2,
+                    a_o = wall.A1,
+                    a_i = wall.A2,
                 };
             }
             else
@@ -160,28 +165,28 @@ namespace LibArchEnvGraph
                     Label = $"非定常1次元壁体M({wall.Name})",
 
                     //比熱
-                    cro = wall.cro,
+                    Cro = wall.Cro,
 
                     //奥行 [m]
-                    depth = wall.depth,
+                    Depth = wall.Depth,
 
                     //表面積 [m2]
                     S = wall.S,
 
                     //熱伝導率 [W/mK]
-                    Rambda = wall.Rambda,
+                    Lambda = wall.Lambda,
 
                     //計算間隔 [s]
-                    dt = TickSecond,
+                    TickSecond = TickSecond,
 
                     //層分割数
-                    n_slice = 5,
+                    SliceCount = 5,
 
                     //対流熱伝達
                     a = new[]
                     {
-                        wall.a1,
-                        wall.a2
+                        wall.A1,
+                        wall.A2
                     }
                 };
             }
@@ -399,8 +404,8 @@ namespace LibArchEnvGraph
             }
             #endregion
 
-            this.OutsideTemperature = F.KelvinToCelsius(outsideTemperature);
-            this.SolarRadiation = solarRadiation;
+            this.House.OutsideTemperature = F.KelvinToCelsius(outsideTemperature);
+            this.House.SolarRadiation = solarRadiation;
 
             return container;
         }

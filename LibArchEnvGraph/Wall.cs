@@ -19,12 +19,12 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 室外側熱伝達率 [W/m2K]
         /// </summary>
-        public double a1 { get; set; } = 23;
+        public double A1 { get; set; } = 23;
 
         /// <summary>
         /// 室内側熱伝達率 [W/m2K]
         /// </summary>
-        public double a2 { get; set; } = 9;
+        public double A2 { get; set; } = 9;
 
         #endregion
 
@@ -33,17 +33,17 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 熱伝導率 [W/mK]
         /// </summary>
-        public double Rambda { get; set; }
+        public double Lambda { get; set; }
 
         /// <summary>
         /// 比熱 (壁体内を非定常計算する場合は必要)
         /// </summary>
-        public double cro { get; set; }
+        public double Cro { get; set; }
 
         /// <summary>
         /// 奥行 [m]
         /// </summary>
-        public double depth { get; set; }
+        public double Depth { get; set; }
 
         /// <summary>
         /// 面積 [m2]
@@ -59,7 +59,7 @@ namespace LibArchEnvGraph
         /// <summary>
         /// 傾斜角
         /// </summary>
-        public double TiltAngle { get; set; }
+        public double TiltAngle { get; set; } = 90.0;
 
         /// <summary>
         /// 方位角
